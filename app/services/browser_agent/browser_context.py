@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 import sys
 import threading
 from pathlib import Path
@@ -46,6 +47,25 @@ class BrowserContextManager:
     _loop: Optional[asyncio.AbstractEventLoop] = None
     _thread: Optional[threading.Thread] = None
     _init_lock = threading.Lock()
+    _worker_lock: Optional[asyncio.Lock] = None
+
+    @staticmethod
+    def is_cloud_runtime() -> bool:
+        """Detects cloud container runtimes (Railway, Render, Fly, Heroku) with strict RAM limits."""
+        return bool(
+            os.getenv("RAILWAY_ENVIRONMENT")
+            or os.getenv("RAILWAY_PROJECT_ID")
+            or os.getenv("RENDER")
+            or os.getenv("FLY_APP_NAME")
+            or os.getenv("DYNO")
+        )
+
+    @classmethod
+    def get_worker_lock(cls) -> asyncio.Lock:
+        """Returns a single-flight lock bound to the Playwright worker event loop."""
+        if cls._worker_lock is None:
+            cls._worker_lock = asyncio.Lock()
+        return cls._worker_lock
 
     @classmethod
     def _ensure_worker_loop(cls) -> asyncio.AbstractEventLoop:
@@ -92,8 +112,9 @@ class BrowserContextManager:
 
     @classmethod
     async def get_browser(cls, headless: bool = True) -> Browser:
-        """Returns a shared Chromium browser instance for spawning isolated parallel worker contexts."""
+        """Returns a shared Chromium browser instance, ensuring no separate persistent context stays in RAM."""
         await cls._ensure_playwright()
+        await cls.close_persistent_context()
         if cls._browser is None or not cls._browser.is_connected():
             cls._browser = await cls._playwright.chromium.launch(headless=headless, args=BROWSER_ARGS)
         return cls._browser
@@ -112,9 +133,10 @@ class BrowserContextManager:
 
     @classmethod
     async def get_context(cls, headless: bool = True) -> BrowserContext:
-        """Returns the persistent context (preserves login cookies in data/browser_session)."""
+        """Returns the persistent context (preserves login cookies), closing any separate shared browser first."""
         cls._user_data_dir.mkdir(parents=True, exist_ok=True)
         await cls._ensure_playwright()
+        await cls.close_browser()
 
         if cls._context is None:
             try:
@@ -137,7 +159,7 @@ class BrowserContextManager:
 
     @classmethod
     async def close_persistent_context(cls):
-        """Closes any open persistent context to free Chromium RAM before worker runs."""
+        """Closes any open persistent context to free Chromium RAM."""
         if cls._context is not None:
             try:
                 await asyncio.wait_for(cls._context.close(), timeout=5)
@@ -146,14 +168,19 @@ class BrowserContextManager:
             cls._context = None
 
     @classmethod
-    async def restart_browser(cls, headless: bool = True):
-        """Recycles the shared Chromium browser instance to recover from renderer OOM crashes."""
+    async def close_browser(cls):
+        """Closes the shared Chromium browser instance to free RAM."""
         if cls._browser is not None:
             try:
                 await asyncio.wait_for(cls._browser.close(), timeout=5)
             except Exception as e:
-                logger.warning(f"Error closing shared browser during restart: {e}")
+                logger.warning(f"Error closing shared browser: {e}")
             cls._browser = None
+
+    @classmethod
+    async def restart_browser(cls, headless: bool = True):
+        """Recycles the shared Chromium browser instance to recover from renderer OOM crashes."""
+        await cls.close_browser()
         await cls.get_browser(headless=headless)
 
     @classmethod
@@ -173,6 +200,8 @@ class BrowserContextManager:
             return pdf_bytes
         finally:
             await ctx.close()
+            if cls.is_cloud_runtime():
+                await cls.close_browser()
 
     @classmethod
     async def render_html_to_pdf(cls, html_content: str, header_html: str = "", footer_html: str = "") -> bytes:

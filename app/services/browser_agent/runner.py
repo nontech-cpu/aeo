@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import os
 from typing import List, Callable, Optional
 from app.schemas.search_schema import ModelExecutionResult, AgentChoice
 from app.schemas.prompt_schema import SearchPrompt
@@ -9,17 +8,6 @@ from app.services.browser_agent.chatgpt_driver import ChatGPTDriver
 from app.services.browser_agent.gemini_driver import GeminiDriver
 
 logger = logging.getLogger(__name__)
-
-
-def _is_constrained_container() -> bool:
-    """Detects cloud container runtimes (Railway, Render, Fly, Heroku) with strict RAM limits."""
-    return bool(
-        os.getenv("RAILWAY_ENVIRONMENT")
-        or os.getenv("RAILWAY_PROJECT_ID")
-        or os.getenv("RENDER")
-        or os.getenv("FLY_APP_NAME")
-        or os.getenv("DYNO")
-    )
 
 
 class BrowserAuditRunner:
@@ -142,7 +130,7 @@ class BrowserAuditRunner:
         on_result: Optional[Callable[[ModelExecutionResult], None]] = None,
     ) -> List[ModelExecutionResult]:
 
-        is_cloud = _is_constrained_container()
+        is_cloud = BrowserContextManager.is_cloud_runtime()
         # Free any persistent browser left open from Step 1 prompt generation to keep RAM low
         await BrowserContextManager.close_persistent_context()
 

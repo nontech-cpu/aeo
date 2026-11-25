@@ -438,12 +438,16 @@
     }
 
     async function analyzeWebsite() {
+      const btnAnalyze = document.getElementById("btn-analyze");
+      if (btnAnalyze.disabled) return;
+
       const url = document.getElementById("target-url").value.trim();
       if (!url) {
         alert("Please enter a valid website URL.");
         return;
       }
 
+      btnAnalyze.disabled = true;
       document.getElementById("step-setup").classList.add("hidden");
       document.getElementById("crawl-loading").classList.remove("hidden");
 
@@ -485,6 +489,8 @@
         alert("Error analyzing website: " + err.message);
         document.getElementById("crawl-loading").classList.add("hidden");
         document.getElementById("step-setup").classList.remove("hidden");
+      } finally {
+        btnAnalyze.disabled = false;
       }
     }
 

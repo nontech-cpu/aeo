@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 from typing import List, Dict, Optional, Tuple
@@ -77,16 +78,33 @@ class LLMEvaluatorService:
 
     @classmethod
     async def _evaluate_via_browser(cls, eval_input: str) -> Optional[BatchEvaluationBundle]:
-        ctx = await BrowserContextManager.get_context(headless=True)
+        is_cloud = BrowserContextManager.is_cloud_runtime()
         for driver_name, driver in [("ChatGPT", ChatGPTDriver), ("Gemini", GeminiDriver)]:
+            ctx = None
             try:
+                if is_cloud:
+                    ctx = await BrowserContextManager.create_isolated_context(headless=True)
+                    page = await ctx.new_page()
+                else:
+                    ctx = await BrowserContextManager.get_context(headless=True)
+                    page = await driver.get_or_create_page(ctx)
+
                 logger.info(f"Running LLM-as-a-judge batch evaluation via {driver_name} tab...")
-                page = await driver.get_or_create_page(ctx)
                 raw_eval_text, _ = await driver.execute_query(page, eval_input, fresh_chat=True, timeout_seconds=90)
                 parsed_json = extract_json_object(raw_eval_text)
                 return BatchEvaluationBundle.model_validate(parsed_json)
             except Exception as e:
                 logger.warning(f"{driver_name} batch evaluation failed: {type(e).__name__}: {e}")
+                err_low = str(e).lower()
+                if is_cloud or "crashed" in err_low or "closed" in err_low:
+                    await BrowserContextManager.close_persistent_context()
+                    await BrowserContextManager.restart_browser(headless=True)
+            finally:
+                if is_cloud and ctx is not None:
+                    try:
+                        await asyncio.wait_for(ctx.close(), timeout=5)
+                    except Exception:
+                        pass
         return None
 
     @classmethod

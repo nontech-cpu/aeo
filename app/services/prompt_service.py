@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 from app.config import settings
@@ -100,33 +101,57 @@ Crawled Website Content:
 
     @classmethod
     async def _generate_via_browser(cls, full_prompt: str) -> GeneratedPromptsResponse:
-        ctx = await BrowserContextManager.get_context(headless=True)
+        is_cloud = BrowserContextManager.is_cloud_runtime()
+        cloud_lock = BrowserContextManager.get_worker_lock()
 
-        last_err = None
-        for driver_name, driver in [("ChatGPT", ChatGPTDriver), ("Gemini", GeminiDriver)]:
-            try:
-                logger.info(f"Analyzing crawled website via live {driver_name} browser tab...")
-                page = await driver.get_or_create_page(ctx)
-                raw_text, _ = await driver.execute_query(page, full_prompt, fresh_chat=True, timeout_seconds=75)
-                parsed_json = extract_json_object(raw_text)
-                validated = GeneratedPromptsResponse.model_validate(parsed_json)
-                validated.brand_name = " ".join(validated.brand_name.split())
-                validated.business_category = " ".join(validated.business_category.split())
-                validated.business_summary = " ".join(validated.business_summary.split())
-                validated.detected_location = " ".join(validated.detected_location.split())
-                validated.key_services = [" ".join(s.split()) for s in validated.key_services]
-                validated.suggested_competitors = [" ".join(c.split()) for c in validated.suggested_competitors]
-                validated.prompts = validated.prompts[:10]
-                for idx, p in enumerate(validated.prompts, start=1):
-                    p.id = idx
-                    p.prompt_text = " ".join(p.prompt_text.split())
-                    p.intent_category = " ".join(p.intent_category.split())
-                    p.reasoning = " ".join(p.reasoning.split())
-                return validated
-            except Exception as e:
-                logger.warning(f"{driver_name} browser prompt generation attempt failed: {type(e).__name__}: {e}")
-                last_err = e
+        async def _execute() -> GeneratedPromptsResponse:
+            last_err = None
+            for driver_name, driver in [("ChatGPT", ChatGPTDriver), ("Gemini", GeminiDriver)]:
+                ctx = None
+                try:
+                    if is_cloud:
+                        ctx = await BrowserContextManager.create_isolated_context(headless=True)
+                        page = await ctx.new_page()
+                    else:
+                        ctx = await BrowserContextManager.get_context(headless=True)
+                        page = await driver.get_or_create_page(ctx)
 
-        raise RuntimeError(
-            f"Could not analyze website using API or Live Browser Agent: {type(last_err).__name__}: {last_err}"
-        )
+                    logger.info(f"Analyzing crawled website via live {driver_name} browser tab...")
+                    raw_text, _ = await driver.execute_query(page, full_prompt, fresh_chat=True, timeout_seconds=75)
+                    parsed_json = extract_json_object(raw_text)
+                    validated = GeneratedPromptsResponse.model_validate(parsed_json)
+                    validated.brand_name = " ".join(validated.brand_name.split())
+                    validated.business_category = " ".join(validated.business_category.split())
+                    validated.business_summary = " ".join(validated.business_summary.split())
+                    validated.detected_location = " ".join(validated.detected_location.split())
+                    validated.key_services = [" ".join(s.split()) for s in validated.key_services]
+                    validated.suggested_competitors = [" ".join(c.split()) for c in validated.suggested_competitors]
+                    validated.prompts = validated.prompts[:10]
+                    for idx, p in enumerate(validated.prompts, start=1):
+                        p.id = idx
+                        p.prompt_text = " ".join(p.prompt_text.split())
+                        p.intent_category = " ".join(p.intent_category.split())
+                        p.reasoning = " ".join(p.reasoning.split())
+                    return validated
+                except Exception as e:
+                    logger.warning(f"{driver_name} browser prompt generation attempt failed: {type(e).__name__}: {e}")
+                    last_err = e
+                    err_low = str(e).lower()
+                    if is_cloud or "crashed" in err_low or "closed" in err_low:
+                        await BrowserContextManager.close_persistent_context()
+                        await BrowserContextManager.restart_browser(headless=True)
+                finally:
+                    if is_cloud and ctx is not None:
+                        try:
+                            await asyncio.wait_for(ctx.close(), timeout=5)
+                        except Exception:
+                            pass
+
+            raise RuntimeError(
+                f"Could not analyze website using API or Live Browser Agent: {type(last_err).__name__}: {last_err}"
+            )
+
+        if is_cloud:
+            async with cloud_lock:
+                return await _execute()
+        return await _execute()

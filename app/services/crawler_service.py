@@ -72,7 +72,7 @@ class WebsiteCrawler:
             await ctx.close()
 
     @classmethod
-    async def _fetch_rendered_html(cls, url: str) -> str:
+    async def _fetch_rendered_html(cls, url: str, allow_playwright: bool = True) -> str:
         # Try fast HTTP first; if content looks like an empty SPA shell or fails, render with Playwright
         html = ""
         try:
@@ -81,7 +81,9 @@ class WebsiteCrawler:
                 resp.raise_for_status()
                 html = resp.text
         except Exception as e:
-            logger.info(f"HTTP crawl fallback to Playwright for {url}: {e}")
+            logger.info(f"HTTP crawl note for {url}: {e}")
+            if not allow_playwright:
+                return ""
 
         # Check if SPA shell (very little visible text)
         if html:
@@ -89,10 +91,10 @@ class WebsiteCrawler:
             for t in soup(["script", "style", "noscript"]):
                 t.decompose()
             visible_len = len(soup.get_text(strip=True))
-            if visible_len > 600:
+            if visible_len > 600 or not allow_playwright:
                 return html
 
-        # Full JS render via Playwright on dedicated Proactor worker loop
+        # Full JS render via Playwright on dedicated worker loop (homepage/SPA shell only)
         try:
             html = await BrowserContextManager.run(cls._playwright_fetch, url)
         except Exception as e:
@@ -132,9 +134,9 @@ class WebsiteCrawler:
                     if len(candidate_urls) >= 3:
                         break
 
-        # Fetch discovered internal pages concurrently
+        # Fetch discovered internal pages cleanly via HTTP (never spawn parallel Playwright tabs for rate-limited subpages)
         if candidate_urls:
-            sub_tasks = [cls._fetch_rendered_html(sub_url) for sub_url in candidate_urls]
+            sub_tasks = [cls._fetch_rendered_html(sub_url, allow_playwright=False) for sub_url in candidate_urls]
             sub_htmls = await asyncio.gather(*sub_tasks, return_exceptions=True)
             for sub_url, sub_res in zip(candidate_urls, sub_htmls):
                 if isinstance(sub_res, str) and sub_res:
