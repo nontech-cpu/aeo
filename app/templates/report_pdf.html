@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    @page {
+      size: A4;
+      margin: 18mm 14mm 18mm 14mm;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #1e293b;
+      font-size: 10pt;
+      line-height: 1.5;
+      margin: 0;
+      padding: 0;
+    }
+    /* Header Banner */
+    .report-header {
+      border-bottom: 2px solid #0f172a;
+      padding-bottom: 12px;
+      margin-bottom: 18px;
+    }
+    .report-badge {
+      display: inline-block;
+      font-size: 8pt;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #4f46e5;
+      background: #eef2ff;
+      padding: 3px 8px;
+      border-radius: 4px;
+      margin-bottom: 6px;
+    }
+    h1.title {
+      font-size: 20pt;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 0 0 6px 0;
+    }
+    .meta-row {
+      font-size: 9pt;
+      color: #475569;
+    }
+    .meta-row strong {
+      color: #0f172a;
+    }
+    .summary-box {
+      background: #f8fafc;
+      border-left: 3px solid #4f46e5;
+      padding: 10px 12px;
+      margin-top: 10px;
+      font-size: 9.5pt;
+      color: #334155;
+      border-radius: 0 6px 6px 0;
+    }
+
+    /* Section Headings */
+    h2.section-title {
+      font-size: 13pt;
+      font-weight: 700;
+      color: #0f172a;
+      border-bottom: 1px solid #cbd5e1;
+      padding-bottom: 4px;
+      margin: 20px 0 10px 0;
+      break-after: avoid;
+    }
+
+    /* KPI Scorecard Grid */
+    .kpi-grid {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      break-inside: avoid;
+    }
+    .kpi-card {
+      flex: 1;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 8px 10px;
+    }
+    .kpi-label {
+      font-size: 7.2pt;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #64748b;
+      font-weight: 600;
+    }
+    .kpi-value {
+      font-size: 15pt;
+      font-weight: 800;
+      color: #0f172a;
+      margin: 2px 0;
+    }
+    .kpi-sub {
+      font-size: 7.5pt;
+      color: #64748b;
+    }
+    .badge-neutral {
+      background: #f1f5f9;
+      color: #475569;
+      border: 1px solid #cbd5e1;
+    }
+    .serp-notice {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-left: 4px solid #f59e0b;
+      border-radius: 6px;
+      padding: 8px 12px;
+      margin-bottom: 10px;
+      font-size: 8.5pt;
+      color: #78350f;
+    }
+    .serp-top-list {
+      margin: 6px 0 0 0;
+      padding: 0;
+      list-style: none;
+      font-size: 8.5pt;
+    }
+    .serp-top-list li {
+      padding: 3px 6px;
+      border-bottom: 1px solid #f1f5f9;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .serp-top-list li.serp-brand-hit {
+      background: #dcfce7;
+      border-radius: 4px;
+      font-weight: 700;
+      color: #14532d;
+    }
+
+    /* Clean Data Tables */
+    table.data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 16px;
+      font-size: 9pt;
+    }
+    table.data-table th {
+      background: #0f172a;
+      color: #ffffff;
+      text-align: left;
+      padding: 7px 10px;
+      font-weight: 600;
+      font-size: 8.5pt;
+    }
+    table.data-table td {
+      padding: 7px 10px;
+      border-bottom: 1px solid #e2e8f0;
+      vertical-align: top;
+    }
+    table.data-table tr:nth-child(even) td {
+      background: #f8fafc;
+    }
+    table.data-table tr {
+      break-inside: avoid;
+    }
+
+    /* Strategy Card */
+    .strategy-card {
+      background: #f0f9ff;
+      border: 1px solid #bae6fd;
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin-bottom: 16px;
+      font-size: 9.5pt;
+      color: #0c4a6e;
+      break-inside: avoid;
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 4px;
+      font-size: 7.5pt;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .badge-found {
+      background: #dcfce7;
+      color: #166534;
+      border: 1px solid #86efac;
+    }
+    .badge-missing {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fca5a5;
+    }
+    .badge-priority-high {
+      background: #fef3c7;
+      color: #92400e;
+    }
+    .badge-intent {
+      background: #e0e7ff;
+      color: #3730a3;
+    }
+
+    /* Prompt Conversation Blocks */
+    .page-break {
+      page-break-before: always;
+    }
+    .prompt-block {
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      margin-bottom: 18px;
+      overflow: hidden;
+    }
+    .prompt-header {
+      background: #f1f5f9;
+      padding: 9px 12px;
+      border-bottom: 1px solid #cbd5e1;
+      break-after: avoid;
+    }
+    .prompt-title {
+      font-size: 10.5pt;
+      font-weight: 700;
+      color: #0f172a;
+      margin: 2px 0 0 0;
+    }
+    .engine-section {
+      padding: 10px 14px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .engine-section:last-child {
+      border-bottom: none;
+    }
+    .engine-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      padding-bottom: 4px;
+      border-bottom: 1px dashed #e2e8f0;
+      break-after: avoid;
+    }
+    .engine-name {
+      font-size: 9.5pt;
+      font-weight: 700;
+      color: #0f172a;
+    }
+    .engine-submeta {
+      font-size: 8pt;
+      color: #475569;
+      margin-bottom: 8px;
+      word-break: break-word;
+    }
+
+    /* Rendered AI HTML Content Styling */
+    .ai-content {
+      font-size: 9pt;
+      line-height: 1.48;
+      color: #1e293b;
+    }
+    .ai-content p {
+      margin: 0 0 6px 0;
+    }
+    .ai-content h1, .ai-content h2, .ai-content h3, .ai-content h4 {
+      font-size: 10pt;
+      font-weight: 700;
+      color: #0f172a;
+      margin: 10px 0 4px 0;
+      break-after: avoid;
+    }
+    .ai-content ul, .ai-content ol {
+      margin: 4px 0 8px 0;
+      padding-left: 18px;
+    }
+    .ai-content li {
+      margin-bottom: 3px;
+    }
+    .ai-content table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 8px 0;
+      font-size: 8.5pt;
+      break-inside: avoid;
+    }
+    .ai-content th {
+      background: #e2e8f0;
+      color: #0f172a;
+      font-weight: 700;
+      padding: 5px 7px;
+      text-align: left;
+      border: 1px solid #cbd5e1;
+    }
+    .ai-content td {
+      padding: 5px 7px;
+      border: 1px solid #cbd5e1;
+      vertical-align: top;
+    }
+    .ai-content a {
+      color: #2563eb;
+      text-decoration: underline;
+    }
+    .ai-content pre, .ai-content code {
+      background: #f1f5f9;
+      font-family: Consolas, monospace;
+      font-size: 8pt;
+      padding: 1px 4px;
+      border-radius: 3px;
+    }
+
+    /* Consultant Prompt Box */
+    .consultant-box {
+      background: #f8fafc;
+      border: 1.5px solid #0ea5e9;
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-family: Consolas, monospace;
+      font-size: 8.5pt;
+      white-space: pre-wrap;
+      color: #0f172a;
+      break-inside: avoid;
+    }
+  </style>
+</head>
+<body>
+  <div class="report-header">
+    <div class="report-badge">Hermes AEO / GEO Intelligence Audit</div>
+    <h1 class="title">AI Search Visibility &amp; Competitive Report</h1>
+    <div class="meta-row">
+      <strong>Website:</strong> {{ report.website_url }} &nbsp;|&nbsp;
+      <strong>Brand:</strong> {{ report.brand_name }} &nbsp;|&nbsp;
+      <strong>Category:</strong> {{ report.business_category }}<br>
+      <strong>Generated:</strong> {{ report.timestamp }} &nbsp;|&nbsp;
+      <strong>Engine:</strong> {{ report.execution_mode | upper }} &nbsp;|&nbsp;
+      <strong>Total Queries:</strong> {{ report.total_prompts }}
+    </div>
+    {% if report.business_summary %}
+    <div class="summary-box">
+      <strong>Business Summary:</strong> {{ report.business_summary }}
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Executive Scorecard -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-label">Overall AI Presence</div>
+      <div class="kpi-value">{{ "%.1f"|format(report.overall_presence_rate) }}%</div>
+      <div class="kpi-sub">Across {{ report.total_prompts }} buyer prompts</div>
+    </div>
+    {% if report.include_google_ai_overview %}
+    <div class="kpi-card">
+      <div class="kpi-label">Google AI Overview</div>
+      <div class="kpi-value">{{ "%.1f%%"|format(report.ai_overview_presence_rate) if report.ai_overview_presence_rate is not none else "N/A" }}</div>
+      <div class="kpi-sub">Brand cited in AIO box</div>
+    </div>
+    {% endif %}
+    {% if report.include_google_page1 %}
+    <div class="kpi-card">
+      <div class="kpi-label">Google Page 1 (Top 10)</div>
+      <div class="kpi-value">{{ "%.1f%%"|format(report.google_page1_presence_rate) if report.google_page1_presence_rate is not none else "N/A" }}</div>
+      <div class="kpi-sub">Organic Page-1 visibility</div>
+    </div>
+    {% endif %}
+    <div class="kpi-card">
+      <div class="kpi-label">ChatGPT Presence</div>
+      <div class="kpi-value">{{ "%.1f%%"|format(report.chatgpt_presence_rate) if report.chatgpt_presence_rate is not none else "N/A" }}</div>
+      <div class="kpi-sub">Live ChatGPT web answers</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Gemini Presence</div>
+      <div class="kpi-value">{{ "%.1f%%"|format(report.gemini_presence_rate) if report.gemini_presence_rate is not none else "N/A" }}</div>
+      <div class="kpi-sub">Live Gemini web answers</div>
+    </div>
+  </div>
+
+  <!-- Top Section: Google SERP Matrix (Only when enabled) -->
+  {% if report.include_google_ai_overview or report.include_google_page1 %}
+  <h2 class="section-title">
+    {% if report.include_google_ai_overview and report.include_google_page1 %}
+      Google AI Overview &amp; Page-1 Organic Visibility Matrix (Across All Queries)
+    {% elif report.include_google_ai_overview %}
+      Google AI Overview Visibility Matrix (Across All Queries)
+    {% else %}
+      Google Page-1 Organic Visibility Matrix (Across All Queries)
+    {% endif %}
+  </h2>
+  {% set blocked_notes = [] %}
+  {% for item in report.prompt_audits %}
+    {% if item.google_serp and (item.google_serp.status != 'ok' or (report.include_google_ai_overview and not item.google_serp.ai_overview_supported)) and item.google_serp.status_note and item.google_serp.status_note not in blocked_notes %}
+      {% set _ = blocked_notes.append(item.google_serp.status_note) %}
+    {% endif %}
+  {% endfor %}
+  {% if blocked_notes %}
+  <div class="serp-notice">
+    <strong>Google Search Live Notice:</strong> {{ blocked_notes[0] }}
+  </div>
+  {% endif %}
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th style="width: 30%;">Buyer Search Query</th>
+        {% if report.include_google_ai_overview %}
+        <th style="width: 20%;">Google AI Overview</th>
+        {% endif %}
+        {% if report.include_google_page1 %}
+        <th style="width: 28%;">Google Page 1 (Top 10 Websites)</th>
+        {% endif %}
+        <th style="width: 11%;">ChatGPT</th>
+        <th style="width: 11%;">Gemini</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in report.prompt_audits %}
+      <tr>
+        <td><strong>#{{ item.prompt_id }}</strong> {{ item.prompt_text }}</td>
+        {% if report.include_google_ai_overview %}
+        <td>
+          {% if item.google_serp and item.google_serp.status == 'ok' %}
+            {% if not item.google_serp.ai_overview_supported %}
+              <span class="badge badge-neutral">Needs SerpApi</span>
+            {% elif item.google_serp.brand_in_ai_overview %}
+              <span class="badge badge-found">BRAND CITED</span>
+            {% elif item.google_serp.has_ai_overview %}
+              <span class="badge badge-missing">AIO Shown · Not Cited</span>
+            {% else %}
+              <span class="badge badge-neutral">No AIO Box</span>
+            {% endif %}
+          {% else %}
+            <span class="badge badge-priority-high">Blocked / Unavailable</span>
+          {% endif %}
+        </td>
+        {% endif %}
+        {% if report.include_google_page1 %}
+        <td>
+          {% if item.google_serp and item.google_serp.status == 'ok' %}
+            {% if item.google_serp.brand_page1_rank %}
+              <span class="badge badge-found">RANK #{{ item.google_serp.brand_page1_rank }}</span>
+              {% if item.google_serp.brand_page1_url %}
+                <div style="font-size: 7.5pt; color: #475569; margin-top: 2px; word-break: break-all;">{{ item.google_serp.brand_page1_url }}</div>
+              {% endif %}
+            {% else %}
+              <span class="badge badge-missing">Not on Page 1</span>
+              {% if item.google_serp.page1_top_results %}
+                <div style="font-size: 7.5pt; color: #64748b; margin-top: 2px;">
+                  Top: {% for r in item.google_serp.page1_top_results[:3] %}#{{ r.rank }} {{ r.domain }}{% if not loop.last %}, {% endif %}{% endfor %}
+                </div>
+              {% endif %}
+            {% endif %}
+          {% else %}
+            <span style="font-size: 7.5pt; color: #92400e;">Requires SERPAPI_API_KEY / SERPER_API_KEY</span>
+          {% endif %}
+        </td>
+        {% endif %}
+        <td>
+          {% if item.chatgpt_eval %}
+            {% if item.chatgpt_eval.is_brand_present %}
+              <span class="badge badge-found">#{{ item.chatgpt_eval.mention_rank or 1 }}</span>
+            {% else %}
+              <span class="badge badge-missing">No</span>
+            {% endif %}
+          {% else %}
+            <span class="badge badge-neutral">N/A</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if item.gemini_eval %}
+            {% if item.gemini_eval.is_brand_present %}
+              <span class="badge badge-found">#{{ item.gemini_eval.mention_rank or 1 }}</span>
+            {% else %}
+              <span class="badge badge-missing">No</span>
+            {% endif %}
+          {% else %}
+            <span class="badge badge-neutral">N/A</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
+  <!-- Winning Competitors -->
+  {% if report.top_competitors_winning %}
+  <h2 class="section-title">Winning Competitors in AI Recommendations</h2>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th style="width: 38%;">Competitor Name</th>
+        <th style="width: 18%;">Mentions</th>
+        <th style="width: 24%;">Winning Prompts</th>
+        <th style="width: 20%;">Source</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for comp in report.top_competitors_winning %}
+      <tr>
+        <td><strong>{{ comp.name }}</strong></td>
+        <td>{{ comp.mention_count }}</td>
+        <td>{% if comp.winning_prompts %}{% for pid in comp.winning_prompts[:8] %}#{{ pid }}{% if not loop.last %}, {% endif %}{% endfor %}{% else %}-{% endif %}</td>
+        <td>{{ "User Watchlist" if comp.is_custom_added else "AI Shortlisted" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
+  <!-- Competitive Strategy -->
+  {% if report.competitor_strategy_analysis %}
+  <h2 class="section-title">Why Competitors Are Ranking (Strategy Analysis)</h2>
+  <div class="strategy-card">{{ report.competitor_strategy_analysis }}</div>
+  {% endif %}
+
+  <!-- Clean Actionable Fixes -->
+  {% if report.actionable_fixes %}
+  <h2 class="section-title">Prioritized Actionable Fixes for Your Website</h2>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th style="width: 12%;">Priority</th>
+        <th style="width: 24%;">Category</th>
+        <th style="width: 64%;">Detected Gap &amp; Concrete Fix</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for fx in report.actionable_fixes %}
+      <tr>
+        <td><span class="badge badge-priority-high">{{ fx.priority }}</span></td>
+        <td><strong>{{ fx.category }}</strong></td>
+        <td>
+          <div><strong>Issue:</strong> {{ fx.issue }}</div>
+          <div style="margin-top: 3px;"><strong>Fix:</strong> {{ fx.fix }}</div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
+  <div class="page-break"></div>
+
+  <!-- Prompt-by-Prompt Full Conversations -->
+  <h2 class="section-title">Complete Prompt-by-Prompt AI Responses</h2>
+  {% for item in report.prompt_audits %}
+  <div class="prompt-block">
+    <div class="prompt-header">
+      <span class="badge badge-intent">Prompt #{{ item.prompt_id }} · {{ item.intent_category }}</span>
+      <div class="prompt-title">{{ item.prompt_text }}</div>
+    </div>
+
+    {% if item.google_serp and (report.include_google_ai_overview or report.include_google_page1) %}
+    <div class="engine-section">
+      <div class="engine-meta">
+        <span class="engine-name">
+          {% if report.include_google_ai_overview and report.include_google_page1 %}
+            Google Search Live (AI Overview &amp; Page 1 Top 10)
+          {% elif report.include_google_ai_overview %}
+            Google Search Live (AI Overview)
+          {% else %}
+            Google Search Live (Page 1 Top 10)
+          {% endif %}
+        </span>
+        <span>
+          {% if item.google_serp.status == 'ok' %}
+            {% if report.include_google_ai_overview %}
+              {% if not item.google_serp.ai_overview_supported %}
+                <span class="badge badge-neutral">AIO: NEEDS SERPAPI</span>
+              {% elif item.google_serp.brand_in_ai_overview %}
+                <span class="badge badge-found">AIO: BRAND CITED</span>
+              {% elif item.google_serp.has_ai_overview %}
+                <span class="badge badge-missing">AIO: NOT CITED</span>
+              {% else %}
+                <span class="badge badge-neutral">NO AIO BOX</span>
+              {% endif %}
+            {% endif %}
+            {% if report.include_google_page1 %}
+              {% if item.google_serp.brand_page1_rank %}
+                <span class="badge badge-found" style="margin-left: 4px;">PAGE 1: RANK #{{ item.google_serp.brand_page1_rank }}</span>
+              {% else %}
+                <span class="badge badge-missing" style="margin-left: 4px;">NOT IN TOP 10</span>
+              {% endif %}
+            {% endif %}
+          {% else %}
+            <span class="badge badge-priority-high">{{ item.google_serp.status | upper }}</span>
+          {% endif %}
+        </span>
+      </div>
+      {% if item.google_serp.status != 'ok' %}
+      <div class="engine-submeta">
+        <strong>Google SERP Note:</strong> {{ item.google_serp.status_note }}
+      </div>
+      {% else %}
+        {% if report.include_google_ai_overview and item.google_serp.has_ai_overview and item.google_serp.ai_overview_text %}
+        <div class="engine-submeta">
+          <strong>Google AI Overview Snippet:</strong> {{ item.google_serp.ai_overview_text }}<br>
+          <strong>AI Overview Sources:</strong> {{ item.google_serp.ai_overview_sources | join(", ") if item.google_serp.ai_overview_sources else "None listed" }}
+        </div>
+        {% endif %}
+        {% if report.include_google_page1 and item.google_serp.page1_top_results %}
+        <div style="margin-top: 6px;">
+          <div style="font-size: 8pt; font-weight: 700; color: #334155; text-transform: uppercase;">Google Page 1 Organic Websites (Top {{ item.google_serp.page1_top_results | length }})</div>
+          <ul class="serp-top-list">
+            {% for res in item.google_serp.page1_top_results %}
+            <li class="{{ 'serp-brand-hit' if res.is_target_brand else '' }}">
+              <span>#{{ res.rank }} · {{ res.title }} <span style="color: #64748b;">({{ res.domain }})</span></span>
+              {% if res.is_target_brand %}<span class="badge badge-found">YOUR WEBSITE</span>{% endif %}
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+        {% endif %}
+      {% endif %}
+    </div>
+    {% endif %}
+
+    {% if item.chatgpt_result is not none %}
+    <div class="engine-section">
+      <div class="engine-meta">
+        <span class="engine-name">ChatGPT Live Response</span>
+        {% if item.chatgpt_eval and item.chatgpt_eval.is_brand_present %}
+          <span class="badge badge-found">FOUND{% if item.chatgpt_eval.mention_rank %} (Rank #{{ item.chatgpt_eval.mention_rank }}){% endif %}</span>
+        {% else %}
+          <span class="badge badge-missing">NOT FOUND</span>
+        {% endif %}
+      </div>
+      <div class="engine-submeta">
+        <strong>Competitors Cited:</strong> {{ item.chatgpt_eval.competitors_cited | join(", ") if (item.chatgpt_eval and item.chatgpt_eval.competitors_cited) else "None" }}<br>
+        <strong>Cited URLs:</strong> {{ item.chatgpt_sources | join(", ") if item.chatgpt_sources else "None" }}
+      </div>
+      <div class="ai-content">
+        {% if item.chatgpt_html %}
+          {{ item.chatgpt_html | safe }}
+        {% else %}
+          <p style="white-space: pre-wrap;">{{ item.chatgpt_result }}</p>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+
+    {% if item.gemini_result is not none %}
+    <div class="engine-section">
+      <div class="engine-meta">
+        <span class="engine-name">Google Gemini Live Response</span>
+        {% if item.gemini_eval and item.gemini_eval.is_brand_present %}
+          <span class="badge badge-found">FOUND{% if item.gemini_eval.mention_rank %} (Rank #{{ item.gemini_eval.mention_rank }}){% endif %}</span>
+        {% else %}
+          <span class="badge badge-missing">NOT FOUND</span>
+        {% endif %}
+      </div>
+      <div class="engine-submeta">
+        <strong>Competitors Cited:</strong> {{ item.gemini_eval.competitors_cited | join(", ") if (item.gemini_eval and item.gemini_eval.competitors_cited) else "None" }}<br>
+        <strong>Cited URLs:</strong> {{ item.gemini_sources | join(", ") if item.gemini_sources else "None" }}
+      </div>
+      <div class="ai-content">
+        {% if item.gemini_html %}
+          {{ item.gemini_html | safe }}
+        {% else %}
+          <p style="white-space: pre-wrap;">{{ item.gemini_result }}</p>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+  {% endfor %}
+
+  <!-- Consultant Prompt -->
+  <h2 class="section-title">Ready-to-Use Master Prompt for ChatGPT Consultant</h2>
+  <div class="consultant-box">{{ report.chatgpt_consultant_prompt }}</div>
+</body>
+</html>

@@ -1,0 +1,23 @@
+# Environment variables & secrets (NEVER commit .env)
+.env
+.env.*
+!.env.example
+
+# Playwright persistent browser profiles & session cookies
+data/
+**/browser_session/
+
+# Python bytecode & virtual environments
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+.pytest_cache/
+
+# Generated exports, logs & OS files
+*.pdf
+*.log
+.DS_Store
+Thumbs.db

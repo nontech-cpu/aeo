@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hermes AEO/GEO Agent | Live Multi-Tab AI Search Audit</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #FAF8F5;
+      background-image:
+        radial-gradient(circle at 8% 0%, rgba(13, 148, 136, 0.08), transparent 42%),
+        radial-gradient(circle at 92% 4%, rgba(217, 119, 6, 0.07), transparent 38%);
+    }
+    .ai-prose p { margin-bottom: 0.55rem; color: #3f3f46; }
+    .ai-prose h1, .ai-prose h2, .ai-prose h3, .ai-prose h4 { font-weight: 700; color: #18181b; margin: 0.75rem 0 0.35rem; font-size: 0.85rem; }
+    .ai-prose ul, .ai-prose ol { margin: 0.35rem 0 0.65rem; padding-left: 1.25rem; color: #3f3f46; }
+    .ai-prose ul { list-style-type: disc; }
+    .ai-prose ol { list-style-type: decimal; }
+    .ai-prose li { margin-bottom: 0.25rem; }
+    .ai-prose table { width: 100%; border-collapse: collapse; margin: 0.5rem 0; font-size: 0.72rem; }
+    .ai-prose th { background: #f4f1ea; color: #18181b; font-weight: 700; padding: 0.35rem 0.5rem; text-align: left; border: 1px solid #e7e5e4; }
+    .ai-prose td { padding: 0.35rem 0.5rem; border: 1px solid #e7e5e4; vertical-align: top; color: #3f3f46; }
+    .ai-prose a { color: #0f766e; text-decoration: underline; }
+    .ai-prose strong { color: #09090b; }
+  </style>
+</head>
+<body class="text-stone-900 min-h-screen antialiased pb-24">
+  <!-- Navbar -->
+  <header class="border-b border-stone-200/80 bg-white/85 backdrop-blur-md sticky top-0 z-40">
+    <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="h-9 w-9 rounded-xl bg-gradient-to-tr from-teal-700 to-emerald-500 flex items-center justify-center font-bold text-white shadow-md shadow-teal-700/20">
+          H
+        </div>
+        <div>
+          <span class="font-bold text-lg tracking-tight text-stone-900">Hermes AEO Agent</span>
+          <span class="text-xs ml-2 px-2.5 py-0.5 rounded-full bg-teal-50 text-teal-800 border border-teal-200 font-semibold">Autonomous Browser GEO</span>
+        </div>
+      </div>
+      <div class="text-xs text-stone-600 font-medium flex items-center gap-2 bg-stone-100/80 px-3 py-1.5 rounded-full border border-stone-200/80">
+        <span class="inline-block w-2 h-2 rounded-full bg-teal-600 animate-pulse"></span>
+        Live Multi-Tab Engine (Zero Regex)
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-6 py-10">
+    <!-- Hero Header -->
+    <div class="text-center max-w-2xl mx-auto mb-10">
+      <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-stone-900 mb-3">
+        Live AI Search Audit in <span class="bg-gradient-to-r from-teal-700 via-emerald-600 to-amber-600 bg-clip-text text-transparent">ChatGPT &amp; Gemini</span>
+      </h1>
+      <p class="text-stone-600 text-sm sm:text-base leading-relaxed">
+        Enter any website link. Hermes crawls the site, generates 10 unbiased buyer queries, runs them sequentially inside live ChatGPT &amp; Gemini browser tabs, and exports a full executive PDF.
+      </p>
+    </div>
+
+    <!-- Step 1: Input & Setup Card -->
+    <div id="step-setup" class="bg-white border border-stone-200/90 rounded-2xl p-6 sm:p-8 shadow-[0_12px_35px_-15px_rgba(24,24,27,0.08)] mb-8">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="md:col-span-2">
+          <label class="block text-xs font-semibold text-stone-700 uppercase tracking-wider mb-2">Target Website URL</label>
+          <input
+            id="target-url"
+            type="url"
+            placeholder="https://yourwebsite.com"
+            class="w-full bg-[#FAF8F5] border border-stone-300 rounded-xl px-4 py-3.5 text-sm text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-teal-600/25 focus:border-teal-600 transition"
+          />
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-stone-700 uppercase tracking-wider mb-2">AI Search Engines</label>
+          <select id="agent-choice" class="w-full bg-[#FAF8F5] border border-stone-300 rounded-xl px-4 py-3.5 text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-teal-600/25 focus:border-teal-600 transition">
+            <option value="all" selected>All (ChatGPT + Gemini)</option>
+            <option value="chatgpt">ChatGPT Only</option>
+            <option value="gemini">Google Gemini Only</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="mt-5 pt-4 border-t border-stone-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+        <div class="flex items-center gap-2.5">
+          <span class="text-stone-600 font-medium">Execution Engine:</span>
+          <select id="execution-mode" class="bg-[#FAF8F5] border border-stone-300 rounded-lg px-3 py-1.5 text-xs text-stone-800 focus:outline-none focus:ring-1 focus:ring-teal-600">
+            <option value="browser" selected>🌐 Autonomous Multi-Tab Browser Agent (Live ChatGPT &amp; Gemini)</option>
+            <option value="api">⚡ Official Grounding APIs (Requires valid keys in .env)</option>
+          </select>
+        </div>
+        <span class="text-[11px] text-teal-700 font-medium flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-teal-600"></span>
+          Fresh chat per prompt • Zero dummy fallbacks
+        </span>
+      </div>
+
+      <div class="mt-6 flex justify-end">
+        <button
+          id="btn-analyze"
+          onclick="analyzeWebsite()"
+          class="w-full sm:w-auto px-6 py-3.5 bg-gradient-to-r from-teal-700 to-emerald-600 hover:from-teal-800 hover:to-emerald-700 text-white font-semibold rounded-xl text-sm transition shadow-lg shadow-teal-700/20 flex items-center justify-center gap-2"
+        >
+          <span>Crawl Website &amp; Generate 10 Prompts</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Crawling Loading State -->
+    <div id="crawl-loading" class="hidden bg-white border border-stone-200 rounded-2xl p-10 text-center shadow-[0_12px_35px_-15px_rgba(24,24,27,0.08)] mb-8">
+      <div class="inline-flex items-center justify-center p-3 bg-teal-50 border border-teal-200 rounded-2xl text-teal-700 mb-4 animate-spin">
+        <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+      </div>
+      <h3 class="text-lg font-semibold text-stone-900 mb-1">Hermes is Crawling &amp; Analyzing Your Website...</h3>
+      <p class="text-xs text-stone-500">Rendering JavaScript pages, scanning services, and formulating 10 tailored discovery prompts.</p>
+    </div>
+
+    <!-- Step 2: Review Prompts & Competitors -->
+    <div id="step-review" class="hidden bg-white border border-stone-200/90 rounded-2xl p-6 sm:p-8 shadow-[0_12px_35px_-15px_rgba(24,24,27,0.08)] mb-8">
+      <div class="pb-6 border-b border-stone-200 space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+          <div class="flex-1 min-w-0">
+            <span class="text-xs uppercase tracking-wider text-teal-700 font-bold">Website Entity Profiled</span>
+            <h2 id="detected-brand" class="text-2xl font-extrabold text-stone-900 mt-0.5 break-words">Brand Name</h2>
+            <p id="detected-category" class="text-xs text-amber-700 mt-1 font-semibold leading-relaxed"></p>
+          </div>
+          <div class="shrink-0">
+            <span class="inline-block text-xs bg-stone-100 text-stone-700 font-semibold px-3 py-1.5 rounded-lg border border-stone-200">10 Unbiased Prompts Ready</span>
+          </div>
+        </div>
+        <div class="p-4 bg-[#F7F5F0] border border-stone-200 rounded-xl">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-stone-500 block mb-1.5">Structured Website Overview</span>
+          <p id="detected-summary" class="text-xs sm:text-sm text-stone-700 leading-relaxed"></p>
+          <div id="detected-services" class="flex flex-wrap gap-1.5 mt-3"></div>
+        </div>
+      </div>
+
+      <!-- Competitors Watchlist -->
+      <div class="mt-6 p-4 bg-[#F7F5F0] border border-stone-200 rounded-xl">
+        <div class="flex items-center justify-between mb-2">
+          <label class="text-xs font-semibold text-stone-800 uppercase tracking-wider">Competitors Watchlist (Auto-Suggested + Custom)</label>
+          <span class="text-[11px] text-stone-500">Add direct competitor links or names</span>
+        </div>
+        <div class="flex gap-2">
+          <input
+            id="competitor-input"
+            type="text"
+            placeholder="e.g. competitor.com or Competitor Brand"
+            class="flex-1 bg-white border border-stone-300 rounded-lg px-3 py-2 text-xs text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-1 focus:ring-teal-600"
+          />
+          <button
+            type="button"
+            onclick="addCompetitor()"
+            class="px-4 py-2 bg-white hover:bg-stone-100 text-stone-800 border border-stone-300 rounded-lg text-xs font-semibold transition"
+          >
+            + Add Competitor
+          </button>
+        </div>
+        <div id="competitor-tags" class="flex flex-wrap gap-2 mt-3"></div>
+      </div>
+
+      <!-- Prompts List -->
+      <div class="mt-6">
+        <div class="flex items-center justify-between mb-3">
+          <label class="text-xs font-semibold text-stone-800 uppercase tracking-wider">10 Tailored Buyer Prompts (Zero Brand Bias)</label>
+          <span class="text-xs text-stone-500">Toggle or add custom queries</span>
+        </div>
+        <div id="prompts-container" class="space-y-2.5 max-h-96 overflow-y-auto pr-1"></div>
+      </div>
+
+      <!-- Add Custom Prompt -->
+      <div class="mt-4 p-4 bg-[#F7F5F0] border border-stone-200 rounded-xl">
+        <label class="block text-xs font-semibold text-stone-800 uppercase tracking-wider mb-2">+ Add Custom Prompt</label>
+        <div class="flex gap-2">
+          <input
+            id="custom-prompt-input"
+            type="text"
+            placeholder="e.g. Best agency for WhatsApp bots in Jodhpur"
+            class="flex-1 bg-white border border-stone-300 rounded-lg px-3 py-2 text-xs text-stone-900 placeholder-stone-400 focus:outline-none focus:ring-1 focus:ring-teal-600"
+          />
+          <button
+            type="button"
+            onclick="addCustomPrompt()"
+            class="px-4 py-2 bg-teal-700 hover:bg-teal-800 text-white rounded-lg text-xs font-semibold transition"
+          >
+            Add Prompt
+          </button>
+        </div>
+      </div>
+
+      <!-- Optional Google Search Checks Checklist -->
+      <div class="mt-4 p-4 bg-[#F7F5F0] border border-stone-200 rounded-xl">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-3">
+          <label class="text-xs font-bold text-teal-800 uppercase tracking-wider">Optional Google Search Checks (Off by Default)</label>
+          <span class="text-[11px] text-stone-500">Leave unchecked to run AI prompts only (ChatGPT &amp; Gemini)</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <label for="chk-google-aio" class="flex items-start gap-3 p-3 rounded-lg bg-white border border-stone-200 hover:border-violet-400 cursor-pointer transition shadow-sm">
+            <input id="chk-google-aio" type="checkbox" class="mt-0.5 rounded bg-white border-stone-300 text-violet-700 focus:ring-violet-600" />
+            <div>
+              <span class="text-xs font-semibold text-stone-900 block">Include Google AI Overview</span>
+              <span class="text-[11px] text-stone-500 block mt-0.5">Checks AI Overview citations &amp; links across queries (requires SERPAPI_API_KEY).</span>
+            </div>
+          </label>
+          <label for="chk-google-page1" class="flex items-start gap-3 p-3 rounded-lg bg-white border border-stone-200 hover:border-amber-400 cursor-pointer transition shadow-sm">
+            <input id="chk-google-page1" type="checkbox" class="mt-0.5 rounded bg-white border-stone-300 text-amber-600 focus:ring-amber-500" />
+            <div>
+              <span class="text-xs font-semibold text-stone-900 block">Include Google Page 1 (Top 10 Websites)</span>
+              <span class="text-[11px] text-stone-500 block mt-0.5">Tracks organic Page-1 rank &amp; Top 10 domains (uses SERPER_API_KEY / SERPAPI_API_KEY).</span>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div class="mt-8 flex justify-end gap-3">
+        <button
+          type="button"
+          onclick="resetToStart()"
+          class="px-5 py-3.5 bg-white hover:bg-stone-100 text-stone-700 border border-stone-300 font-semibold rounded-xl text-sm transition"
+        >
+          Change URL
+        </button>
+        <button
+          id="btn-run-audit"
+          onclick="startFullAudit()"
+          class="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-stone-900 to-stone-800 hover:from-teal-700 hover:to-emerald-600 text-white font-semibold rounded-xl text-sm transition shadow-lg shadow-stone-900/15 flex items-center justify-center gap-2"
+        >
+          <span>Run Multi-Tab Browser Audit</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Step 2.5: Live Progress Tracker -->
+    <div id="audit-progress-card" class="hidden bg-white border border-teal-200 rounded-2xl p-6 sm:p-8 shadow-[0_12px_35px_-15px_rgba(13,148,136,0.14)] mb-8">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-3">
+          <div class="h-8 w-8 rounded-full border-2 border-teal-600 border-t-transparent animate-spin"></div>
+          <div>
+            <h3 class="text-base font-bold text-stone-900">Hermes is Executing Live AI Searches...</h3>
+            <p id="progress-status-msg" class="text-xs text-teal-700 font-medium mt-0.5">Starting sequential tabs...</p>
+          </div>
+        </div>
+        <span id="progress-pct-label" class="text-xl font-extrabold text-teal-700">0%</span>
+      </div>
+
+      <!-- Progress Bar -->
+      <div class="w-full bg-stone-100 rounded-full h-3 overflow-hidden border border-stone-200 mb-5">
+        <div id="progress-bar-fill" class="bg-gradient-to-r from-teal-600 via-emerald-500 to-amber-500 h-full transition-all duration-500" style="width: 2%"></div>
+      </div>
+
+      <!-- Live Execution Logs -->
+      <div class="bg-[#F7F5F0] border border-stone-200 rounded-xl p-4">
+        <span class="text-[10px] font-bold uppercase tracking-wider text-stone-500 block mb-2">Live Agent Execution Feed</span>
+        <div id="live-logs-box" class="font-mono text-[11px] text-stone-700 space-y-1 max-h-44 overflow-y-auto"></div>
+      </div>
+
+      <!-- Progressive Partial Responses -->
+      <div id="live-partial-wrapper" class="hidden mt-5">
+        <span class="text-[10px] font-bold uppercase tracking-wider text-teal-700 block mb-2">Live Captured Answers (Streaming In Real Time)</span>
+        <div id="live-partial-results" class="space-y-2.5 max-h-72 overflow-y-auto pr-1"></div>
+      </div>
+    </div>
+
+    <!-- Step 3: Completed Analysis & Export Choice -->
+    <div id="step-results" class="hidden space-y-6">
+      <!-- Completion Banner & Export Selector -->
+      <div class="bg-gradient-to-r from-teal-50/90 via-white to-amber-50/80 border border-teal-200 rounded-2xl p-6 sm:p-8 shadow-[0_12px_35px_-15px_rgba(13,148,136,0.15)]">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div>
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold mb-2">
+              <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+              Analysis 100% Complete
+            </div>
+            <h2 class="text-2xl font-extrabold text-stone-900">I have completely analyzed your website!</h2>
+            <p class="text-xs sm:text-sm text-stone-600 mt-1">
+              All prompts have been executed across ChatGPT &amp; Gemini. How would you like to export your results?
+            </p>
+          </div>
+          <div class="flex flex-wrap items-center gap-3 shrink-0">
+            <a
+              id="btn-download-pdf-main"
+              href="#"
+              download
+              class="px-6 py-3.5 bg-gradient-to-r from-teal-700 to-emerald-600 hover:from-teal-800 hover:to-emerald-700 text-white font-bold text-sm rounded-xl shadow-lg shadow-teal-700/20 transition flex items-center gap-2"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              <span>Export Full PDF Report</span>
+            </a>
+            <button
+              type="button"
+              onclick="copyRawJsonData()"
+              class="px-4 py-3.5 bg-white hover:bg-stone-100 text-stone-700 font-semibold text-xs rounded-xl border border-stone-300 transition shadow-sm"
+            >
+              📋 Copy JSON
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quantitative Scorecard -->
+      <div class="bg-white border border-stone-200/90 rounded-2xl p-6 sm:p-8 shadow-[0_12px_35px_-15px_rgba(24,24,27,0.08)]">
+        <div id="scorecard-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div class="bg-[#F7F5F0] p-4 rounded-xl border border-stone-200">
+            <span class="text-xs text-stone-600 font-medium">Overall AI Visibility</span>
+            <div id="score-overall" class="text-2xl sm:text-3xl font-extrabold text-stone-900 mt-1">0%</div>
+            <span class="text-[11px] text-stone-500">AI answers combined</span>
+          </div>
+          <div id="card-ai-overview" class="bg-violet-50/70 p-4 rounded-xl border border-violet-200 hidden">
+            <span class="text-xs text-violet-800 font-semibold">Google AI Overview</span>
+            <div id="score-ai-overview" class="text-2xl sm:text-3xl font-extrabold text-violet-700 mt-1">N/A</div>
+            <span class="text-[11px] text-violet-600/80">Cited in AIO box</span>
+          </div>
+          <div id="card-page1" class="bg-amber-50/80 p-4 rounded-xl border border-amber-200 hidden">
+            <span class="text-xs text-amber-800 font-semibold">Google Page 1</span>
+            <div id="score-page1" class="text-2xl sm:text-3xl font-extrabold text-amber-700 mt-1">N/A</div>
+            <span class="text-[11px] text-amber-700/80">Top 10 organic ranks</span>
+          </div>
+          <div class="bg-teal-50/70 p-4 rounded-xl border border-teal-200">
+            <span class="text-xs text-teal-800 font-semibold">ChatGPT Citations</span>
+            <div id="score-chatgpt" class="text-2xl sm:text-3xl font-extrabold text-teal-700 mt-1">0%</div>
+            <span class="text-[11px] text-teal-700/80">Live ChatGPT web</span>
+          </div>
+          <div class="bg-sky-50/70 p-4 rounded-xl border border-sky-200">
+            <span class="text-xs text-sky-800 font-semibold">Gemini Citations</span>
+            <div id="score-gemini" class="text-2xl sm:text-3xl font-extrabold text-sky-700 mt-1">0%</div>
+            <span class="text-[11px] text-sky-700/80">Live Gemini web</span>
+          </div>
+        </div>
+
+        <!-- Google AI Overview & Page 1 Visibility Matrix -->
+        <div id="serp-matrix-container" class="hidden mt-6 bg-[#FAF8F5] border border-stone-200 rounded-xl p-5">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+            <h3 id="serp-matrix-title" class="text-xs font-bold uppercase tracking-wider text-stone-800">
+              Google Search Visibility Matrix (All Queries)
+            </h3>
+            <span class="text-[11px] text-stone-500">Side-by-side Google &amp; AI Chat tracking</span>
+          </div>
+          <div id="serp-matrix-alert" class="hidden mb-3 p-3 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-800 font-medium"></div>
+          <div class="overflow-x-auto bg-white rounded-lg border border-stone-200">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="border-b border-stone-200 bg-[#F4F1EA] text-stone-600 uppercase text-[10px]">
+                  <th class="py-2.5 px-3">Search Query</th>
+                  <th id="col-aio-head" class="py-2.5 px-3 hidden">Google AI Overview</th>
+                  <th id="col-page1-head" class="py-2.5 px-3 hidden">Google Page 1 (Top 10)</th>
+                  <th class="py-2.5 px-3">ChatGPT</th>
+                  <th class="py-2.5 px-3">Gemini</th>
+                </tr>
+              </thead>
+              <tbody id="serp-matrix-body" class="divide-y divide-stone-200 text-stone-700"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Competitive Strategy & Actionable Fixes -->
+        <div class="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="bg-[#F7F5F0] border border-stone-200 rounded-xl p-5">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-teal-800 mb-3">Competitor Strategy Analysis (Who Won &amp; Why)</h3>
+            <p id="competitor-strategy-text" class="text-xs text-stone-700 leading-relaxed whitespace-pre-line"></p>
+            <div id="top-competitors-pills" class="flex flex-wrap gap-2 mt-4"></div>
+          </div>
+
+          <div class="bg-[#F7F5F0] border border-stone-200 rounded-xl p-5">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-amber-800 mb-3">Clean Actionable Fixes for Your Website</h3>
+            <div id="actionable-fixes-list" class="space-y-3"></div>
+          </div>
+        </div>
+
+        <!-- Master Consultant Prompt -->
+        <div class="mt-8 p-5 bg-violet-50/60 border border-violet-200 rounded-xl">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-violet-900">Ready-To-Paste Prompt for ChatGPT Consultant</h3>
+            <button
+              type="button"
+              onclick="copyConsultantPrompt()"
+              class="px-3 py-1.5 bg-white hover:bg-violet-100/70 text-violet-800 border border-violet-200 rounded-lg text-xs font-semibold transition shadow-sm"
+            >
+              Copy Prompt
+            </button>
+          </div>
+          <pre id="consultant-prompt-text" class="bg-white p-3.5 rounded-lg text-xs font-mono text-stone-800 whitespace-pre-wrap border border-stone-200 max-h-48 overflow-y-auto"></pre>
+        </div>
+
+        <!-- Full Query Breakdown -->
+        <div class="mt-8">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-sm font-bold text-stone-900 uppercase tracking-wider">All Prompt Conversations (Full Real Outputs)</h3>
+            <span class="text-xs text-stone-500">Click any prompt to inspect full ChatGPT &amp; Gemini responses</span>
+          </div>
+          <div id="audit-items-list" class="space-y-4"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Sticky Bottom Action Bar -->
+  <div id="sticky-action-bar" class="hidden fixed bottom-5 left-1/2 transform -translate-x-1/2 w-11/12 max-w-3xl bg-white/95 border border-stone-200 backdrop-blur-lg px-6 py-3.5 rounded-2xl shadow-[0_20px_50px_-15px_rgba(24,24,27,0.18)] z-50 flex items-center justify-between gap-4">
+    <div class="flex items-center gap-3">
+      <span class="h-3 w-3 rounded-full bg-teal-600"></span>
+      <div>
+        <span id="sticky-brand" class="text-xs font-bold text-stone-900 block">Audit Complete</span>
+        <span id="sticky-score" class="text-[11px] text-stone-500 font-medium">Visibility: 0%</span>
+      </div>
+    </div>
+    <div class="flex items-center gap-2 sm:gap-3">
+      <button onclick="copyConsultantPrompt()" class="px-3 py-2 bg-[#F7F5F0] hover:bg-stone-200/70 text-xs font-semibold text-stone-700 rounded-xl border border-stone-300 transition">
+        📋 Copy Prompt
+      </button>
+      <a id="btn-download-pdf-sticky" href="#" download class="px-5 py-2.5 bg-gradient-to-r from-teal-700 to-emerald-600 hover:from-teal-800 hover:to-emerald-700 text-white font-bold text-xs sm:text-sm rounded-xl shadow-lg shadow-teal-700/20 transition flex items-center gap-1.5">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        <span>Download PDF</span>
+      </a>
+    </div>
+  </div>
+
+  <script>
+    let generatedData = null;
+    let customCompetitors = [];
+    let customPrompts = [];
+    let pollTimer = null;
+
+    function escapeHtml(str) {
+      if (!str) return "";
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function resetToStart() {
+      document.getElementById("step-review").classList.add("hidden");
+      document.getElementById("step-setup").classList.remove("hidden");
+    }
+
+    async function analyzeWebsite() {
+      const url = document.getElementById("target-url").value.trim();
+      if (!url) {
+        alert("Please enter a valid website URL.");
+        return;
+      }
+
+      document.getElementById("step-setup").classList.add("hidden");
+      document.getElementById("crawl-loading").classList.remove("hidden");
+
+      try {
+        const response = await fetch("/api/v1/crawl-and-suggest", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url: url })
+        });
+
+        if (!response.ok) {
+          const err = await response.json().catch(() => ({}));
+          throw new Error(err.detail || "Crawl failed with status " + response.status);
+        }
+
+        generatedData = await response.json();
+        customCompetitors = Array.isArray(generatedData.suggested_competitors) ? [...generatedData.suggested_competitors] : [];
+        customPrompts = [];
+
+        document.getElementById("detected-brand").innerText = generatedData.brand_name;
+        document.getElementById("detected-category").innerText = `${generatedData.business_category} · ${generatedData.detected_location}`;
+        document.getElementById("detected-summary").innerText = generatedData.business_summary || "";
+
+        const svcContainer = document.getElementById("detected-services");
+        svcContainer.innerHTML = "";
+        (generatedData.key_services || []).forEach(svc => {
+          const pill = document.createElement("span");
+          pill.className = "text-[11px] px-2.5 py-0.5 rounded-md bg-teal-50 border border-teal-200 text-teal-800 font-medium";
+          pill.innerText = svc;
+          svcContainer.appendChild(pill);
+        });
+
+        renderCompetitorTags();
+        renderPromptsList();
+
+        document.getElementById("crawl-loading").classList.add("hidden");
+        document.getElementById("step-review").classList.remove("hidden");
+      } catch (err) {
+        alert("Error analyzing website: " + err.message);
+        document.getElementById("crawl-loading").classList.add("hidden");
+        document.getElementById("step-setup").classList.remove("hidden");
+      }
+    }
+
+    function renderPromptsList() {
+      const container = document.getElementById("prompts-container");
+      container.innerHTML = "";
+
+      generatedData.prompts.forEach((p) => {
+        const row = document.createElement("div");
+        row.className = "flex items-start gap-3 p-3 bg-[#FAF8F5] border border-stone-200 rounded-xl";
+        row.innerHTML = `
+          <input type="checkbox" id="prompt-chk-${p.id}" value="${p.id}" checked class="mt-1 h-4 w-4 rounded border-stone-300 bg-white text-teal-700">
+          <div class="flex-1 text-xs">
+            <span class="inline-block px-1.5 py-0.5 rounded text-[10px] bg-stone-200/80 text-stone-700 font-mono mr-1.5">#${p.id}</span>
+            <span class="inline-block px-1.5 py-0.5 rounded text-[10px] bg-teal-50 text-teal-800 border border-teal-200 font-semibold mr-2">${p.intent_category}</span>
+            <span class="text-stone-800 font-medium">${p.prompt_text}</span>
+          </div>
+        `;
+        container.appendChild(row);
+      });
+
+      customPrompts.forEach((cp, idx) => {
+        const row = document.createElement("div");
+        row.className = "flex items-start gap-3 p-3 bg-amber-50/70 border border-amber-200 rounded-xl";
+        row.innerHTML = `
+          <input type="checkbox" checked disabled class="mt-1 h-4 w-4 rounded bg-amber-100 text-amber-700">
+          <div class="flex-1 text-xs">
+            <span class="inline-block px-1.5 py-0.5 rounded text-[10px] bg-amber-100 text-amber-800 font-mono mr-1.5">Custom</span>
+            <span class="text-stone-800 font-medium">${cp}</span>
+          </div>
+          <button type="button" onclick="removeCustomPrompt(${idx})" class="text-xs text-rose-600 hover:text-rose-800 font-medium">Remove</button>
+        `;
+        container.appendChild(row);
+      });
+    }
+
+    function addCompetitor() {
+      const input = document.getElementById("competitor-input");
+      const val = input.value.trim();
+      if (!val) return;
+      if (!customCompetitors.includes(val)) {
+        customCompetitors.push(val);
+        renderCompetitorTags();
+      }
+      input.value = "";
+    }
+
+    function removeCompetitor(idx) {
+      customCompetitors.splice(idx, 1);
+      renderCompetitorTags();
+    }
+
+    function renderCompetitorTags() {
+      const container = document.getElementById("competitor-tags");
+      container.innerHTML = "";
+      customCompetitors.forEach((c, idx) => {
+        const badge = document.createElement("span");
+        badge.className = "inline-flex items-center gap-1.5 text-xs bg-white text-teal-800 font-medium px-2.5 py-1 rounded-lg border border-stone-300 shadow-sm";
+        badge.innerHTML = `<span>${escapeHtml(c)}</span><button type="button" onclick="removeCompetitor(${idx})" class="text-stone-400 hover:text-stone-900">&times;</button>`;
+        container.appendChild(badge);
+      });
+    }
+
+    function addCustomPrompt() {
+      const input = document.getElementById("custom-prompt-input");
+      const val = input.value.trim();
+      if (!val) return;
+      customPrompts.push(val);
+      input.value = "";
+      renderPromptsList();
+    }
+
+    function removeCustomPrompt(idx) {
+      customPrompts.splice(idx, 1);
+      renderPromptsList();
+    }
+
+    async function startFullAudit() {
+      const url = document.getElementById("target-url").value.trim();
+      const agentChoice = document.getElementById("agent-choice").value;
+      const executionMode = document.getElementById("execution-mode").value;
+      const includeGoogleAio = document.getElementById("chk-google-aio")?.checked || false;
+      const includeGooglePage1 = document.getElementById("chk-google-page1")?.checked || false;
+
+      const selectedPromptIds = [];
+      generatedData.prompts.forEach(p => {
+        const chk = document.getElementById(`prompt-chk-${p.id}`);
+        if (chk && chk.checked) selectedPromptIds.push(p.id);
+      });
+
+      document.getElementById("step-review").classList.add("hidden");
+      document.getElementById("audit-progress-card").classList.remove("hidden");
+      document.getElementById("live-logs-box").innerHTML = "";
+
+      try {
+        const resp = await fetch("/api/v1/start-audit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            url: url,
+            agent_choice: agentChoice,
+            execution_mode: executionMode,
+            brand_name: generatedData.brand_name,
+            business_category: generatedData.business_category,
+            business_summary: generatedData.business_summary,
+            prompts_to_run: generatedData.prompts,
+            custom_prompts: customPrompts,
+            custom_competitors: customCompetitors,
+            selected_prompt_ids: selectedPromptIds,
+            include_google_ai_overview: includeGoogleAio,
+            include_google_page1: includeGooglePage1
+          })
+        });
+
+        if (!resp.ok) {
+          const err = await resp.json().catch(() => ({}));
+          throw new Error(err.detail || "Failed to start audit");
+        }
+
+        const { audit_id } = await resp.json();
+        pollAuditStatus(audit_id);
+      } catch (err) {
+        alert("Error starting audit: " + err.message);
+        document.getElementById("audit-progress-card").classList.add("hidden");
+        document.getElementById("step-review").classList.remove("hidden");
+      }
+    }
+
+    function pollAuditStatus(auditId) {
+      if (pollTimer) clearInterval(pollTimer);
+      pollTimer = setInterval(async () => {
+        try {
+          const res = await fetch(`/api/v1/audit-status/${auditId}`);
+          if (!res.ok) return;
+          const data = await res.json();
+
+          document.getElementById("progress-pct-label").innerText = data.progress_percent + "%";
+          document.getElementById("progress-bar-fill").style.width = data.progress_percent + "%";
+          document.getElementById("progress-status-msg").innerText = data.current_message;
+
+          const logsBox = document.getElementById("live-logs-box");
+          logsBox.innerHTML = data.logs.map(l => `<div>${escapeHtml(l)}</div>`).join("");
+          logsBox.scrollTop = logsBox.scrollHeight;
+
+          if (data.partial_items && data.partial_items.length > 0) {
+            document.getElementById("live-partial-wrapper").classList.remove("hidden");
+            const pBox = document.getElementById("live-partial-results");
+            pBox.innerHTML = data.partial_items.map(it => `
+              <div class="p-3 bg-[#FAF8F5] border border-stone-200 rounded-lg text-xs">
+                <div class="font-semibold text-stone-900 mb-1">#${it.prompt_id} - ${escapeHtml(it.prompt_text)}</div>
+                <div class="flex flex-wrap gap-3 text-[11px]">
+                  <span class="${it.chatgpt_result ? 'text-teal-700 font-semibold' : 'text-stone-500'}">ChatGPT: ${it.chatgpt_result ? '✅ Captured (' + it.chatgpt_result.length + ' chars)' : '⏳ Running...'}</span>
+                  <span class="${it.gemini_result ? 'text-sky-700 font-semibold' : 'text-stone-500'}">Gemini: ${it.gemini_result ? '✅ Captured (' + it.gemini_result.length + ' chars)' : '⏳ Running...'}</span>
+                </div>
+              </div>
+            `).join("");
+          }
+
+          if (data.status === "completed" && data.report) {
+            clearInterval(pollTimer);
+            renderCompletedReport(data.report);
+          } else if (data.status === "failed") {
+            clearInterval(pollTimer);
+            alert("Audit failed: " + (data.error || "Unknown error"));
+            document.getElementById("audit-progress-card").classList.add("hidden");
+            document.getElementById("step-review").classList.remove("hidden");
+          }
+        } catch (e) {
+          console.error("Polling error", e);
+        }
+      }, 2000);
+    }
+
+    function renderCompletedReport(report) {
+      window.lastAuditReport = report;
+      document.getElementById("audit-progress-card").classList.add("hidden");
+      document.getElementById("step-results").classList.remove("hidden");
+
+      const showAio = Boolean(report.include_google_ai_overview);
+      const showPage1 = Boolean(report.include_google_page1);
+      const showAnySerp = showAio || showPage1;
+
+      const scorecardGrid = document.getElementById("scorecard-grid");
+      const activeCardCount = 3 + (showAio ? 1 : 0) + (showPage1 ? 1 : 0);
+      const gridColsMap = { 3: "sm:grid-cols-3", 4: "sm:grid-cols-4", 5: "sm:grid-cols-5" };
+      scorecardGrid.className = `grid grid-cols-2 ${gridColsMap[activeCardCount] || "sm:grid-cols-3"} gap-3`;
+
+      document.getElementById("card-ai-overview").classList.toggle("hidden", !showAio);
+      document.getElementById("card-page1").classList.toggle("hidden", !showPage1);
+
+      const overallStr = report.overall_presence_rate.toFixed(0) + "%";
+      document.getElementById("score-overall").innerText = overallStr;
+      document.getElementById("score-ai-overview").innerText = report.ai_overview_presence_rate !== null && report.ai_overview_presence_rate !== undefined
+        ? report.ai_overview_presence_rate.toFixed(0) + "%" : "N/A";
+      document.getElementById("score-page1").innerText = report.google_page1_presence_rate !== null && report.google_page1_presence_rate !== undefined
+        ? report.google_page1_presence_rate.toFixed(0) + "%" : "N/A";
+      document.getElementById("score-chatgpt").innerText = report.chatgpt_presence_rate !== null ? report.chatgpt_presence_rate.toFixed(0) + "%" : "N/A";
+      document.getElementById("score-gemini").innerText = report.gemini_presence_rate !== null ? report.gemini_presence_rate.toFixed(0) + "%" : "N/A";
+
+      // Populate Top Google SERP Matrix only when at least one Google check is enabled
+      const serpContainer = document.getElementById("serp-matrix-container");
+      const serpAlert = document.getElementById("serp-matrix-alert");
+      const serpBody = document.getElementById("serp-matrix-body");
+      const serpTitle = document.getElementById("serp-matrix-title");
+      document.getElementById("col-aio-head").classList.toggle("hidden", !showAio);
+      document.getElementById("col-page1-head").classList.toggle("hidden", !showPage1);
+      serpBody.innerHTML = "";
+      let firstSerpNotice = "";
+
+      if (showAnySerp) {
+        serpContainer.classList.remove("hidden");
+        if (showAio && showPage1) {
+          serpTitle.innerText = "Google AI Overview & Page-1 Organic Visibility Matrix (All Queries)";
+        } else if (showAio) {
+          serpTitle.innerText = "Google AI Overview Visibility Matrix (All Queries)";
+        } else {
+          serpTitle.innerText = "Google Page-1 Organic Visibility Matrix (All Queries)";
+        }
+
+        (report.prompt_audits || []).forEach(item => {
+          const gs = item.google_serp;
+          if (gs && (gs.status !== "ok" || (showAio && gs.ai_overview_supported === false)) && gs.status_note && !firstSerpNotice) {
+            firstSerpNotice = gs.status_note;
+          }
+
+          let aioCell = `<span class="px-2 py-0.5 rounded text-[10px] bg-stone-100 text-stone-600 border border-stone-200">Unavailable</span>`;
+          let page1Cell = `<span class="text-[11px] text-amber-700">API key needed for live SERP</span>`;
+
+          if (gs && gs.status === "ok") {
+            if (showAio) {
+              if (gs.ai_overview_supported === false) {
+                aioCell = `<span class="px-2 py-0.5 rounded text-[10px] bg-amber-50 text-amber-800 border border-amber-200 font-semibold">Needs SerpApi</span>`;
+              } else if (gs.brand_in_ai_overview) {
+                aioCell = `<span class="px-2 py-0.5 rounded text-[10px] bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold">BRAND CITED</span>`;
+              } else if (gs.has_ai_overview) {
+                aioCell = `<span class="px-2 py-0.5 rounded text-[10px] bg-rose-50 text-rose-700 border border-rose-200 font-semibold">AIO Shown · Not Cited</span>`;
+              } else {
+                aioCell = `<span class="px-2 py-0.5 rounded text-[10px] bg-stone-100 text-stone-600 border border-stone-200">No AIO Box</span>`;
+              }
+            }
+
+            if (showPage1) {
+              if (gs.brand_page1_rank) {
+                page1Cell = `<span class="px-2 py-0.5 rounded text-[10px] bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold">RANK #${gs.brand_page1_rank}</span>
+                  <div class="text-[10px] text-stone-500 truncate max-w-[220px] mt-1">${escapeHtml(gs.brand_page1_url || "")}</div>`;
+              } else {
+                const topDomains = (gs.page1_top_results || []).slice(0, 3).map(r => `#${r.rank} ${escapeHtml(r.domain)}`).join(", ");
+                page1Cell = `<span class="px-2 py-0.5 rounded text-[10px] bg-rose-50 text-rose-700 border border-rose-200 font-semibold">Not on Page 1</span>
+                  <div class="text-[10px] text-stone-500 truncate max-w-[220px] mt-1">${topDomains || "No organic results"}</div>`;
+              }
+            }
+          } else if (gs && gs.status === "captcha_blocked") {
+            aioCell = `<span class="px-2 py-0.5 rounded text-[10px] bg-amber-50 text-amber-800 border border-amber-200 font-semibold">Google Check Blocked</span>`;
+            page1Cell = aioCell;
+          }
+
+          const gptCell = item.chatgpt_eval
+            ? (item.chatgpt_eval.is_brand_present
+                ? `<span class="text-teal-700 font-bold">#${item.chatgpt_eval.mention_rank || 1}</span>`
+                : `<span class="text-rose-600 font-medium">No</span>`)
+            : `<span class="text-stone-400">N/A</span>`;
+
+          const gemCell = item.gemini_eval
+            ? (item.gemini_eval.is_brand_present
+                ? `<span class="text-teal-700 font-bold">#${item.gemini_eval.mention_rank || 1}</span>`
+                : `<span class="text-rose-600 font-medium">No</span>`)
+            : `<span class="text-stone-400">N/A</span>`;
+
+          const tr = document.createElement("tr");
+          tr.className = "hover:bg-[#FAF8F5]";
+          tr.innerHTML = `
+            <td class="py-2.5 px-3 font-medium text-stone-900 max-w-xs">#${item.prompt_id} ${escapeHtml(item.prompt_text)}</td>
+            ${showAio ? `<td class="py-2.5 px-3 whitespace-nowrap">${aioCell}</td>` : ""}
+            ${showPage1 ? `<td class="py-2.5 px-3">${page1Cell}</td>` : ""}
+            <td class="py-2.5 px-3 whitespace-nowrap">${gptCell}</td>
+            <td class="py-2.5 px-3 whitespace-nowrap">${gemCell}</td>
+          `;
+          serpBody.appendChild(tr);
+        });
+
+        if (firstSerpNotice) {
+          serpAlert.innerText = firstSerpNotice;
+          serpAlert.classList.remove("hidden");
+        } else {
+          serpAlert.classList.add("hidden");
+        }
+      } else {
+        serpContainer.classList.add("hidden");
+        serpAlert.classList.add("hidden");
+      }
+
+      document.getElementById("competitor-strategy-text").innerText = report.competitor_strategy_analysis || "No strategy notes available.";
+
+      const compPills = document.getElementById("top-competitors-pills");
+      compPills.innerHTML = "";
+      (report.top_competitors_winning || []).forEach(c => {
+        const pill = document.createElement("span");
+        pill.className = "text-[11px] px-2.5 py-1 rounded-lg bg-white border border-stone-200 text-teal-800 font-medium shadow-sm";
+        pill.innerText = `${c.name} (${c.mention_count} mentions)`;
+        compPills.appendChild(pill);
+      });
+
+      const fixesBox = document.getElementById("actionable-fixes-list");
+      fixesBox.innerHTML = "";
+      (report.actionable_fixes || []).forEach(fx => {
+        const card = document.createElement("div");
+        card.className = "p-3.5 bg-white border border-stone-200 rounded-lg text-xs shadow-sm";
+        card.innerHTML = `
+          <div class="flex items-center justify-between mb-1">
+            <span class="font-bold text-amber-800">${escapeHtml(fx.category)}</span>
+            <span class="px-2 py-0.5 rounded text-[10px] bg-amber-50 text-amber-800 border border-amber-200 font-semibold">${escapeHtml(fx.priority)}</span>
+          </div>
+          <p class="text-stone-600 mb-1"><b>Gap:</b> ${escapeHtml(fx.issue)}</p>
+          <p class="text-stone-900"><b>Fix:</b> ${escapeHtml(fx.fix)}</p>
+        `;
+        fixesBox.appendChild(card);
+      });
+
+      document.getElementById("consultant-prompt-text").innerText = report.chatgpt_consultant_prompt;
+
+      const pdfUrl = `/api/v1/download-pdf/${report.audit_id}`;
+      document.getElementById("btn-download-pdf-main").href = pdfUrl;
+      document.getElementById("btn-download-pdf-sticky").href = pdfUrl;
+      document.getElementById("sticky-brand").innerText = report.brand_name;
+      document.getElementById("sticky-score").innerText = "Overall AI Visibility: " + overallStr;
+      document.getElementById("sticky-action-bar").classList.remove("hidden");
+
+      const listContainer = document.getElementById("audit-items-list");
+      listContainer.innerHTML = "";
+
+      report.prompt_audits.forEach((item, idx) => {
+        const itemEl = document.createElement("div");
+        itemEl.className = "p-5 bg-[#FAF8F5] border border-stone-200 rounded-xl space-y-3";
+
+        let gptBadge = `<span class="text-xs text-stone-400">N/A</span>`;
+        if (item.chatgpt_eval) {
+          gptBadge = item.chatgpt_eval.is_brand_present
+            ? `<span class="px-2 py-0.5 rounded text-[11px] bg-emerald-50 text-emerald-800 font-bold border border-emerald-200">FOUND (Rank #${item.chatgpt_eval.mention_rank || 1})</span>`
+            : `<span class="px-2 py-0.5 rounded text-[11px] bg-rose-50 text-rose-700 font-bold border border-rose-200">NOT FOUND</span>`;
+        }
+
+        let gemBadge = `<span class="text-xs text-stone-400">N/A</span>`;
+        if (item.gemini_eval) {
+          gemBadge = item.gemini_eval.is_brand_present
+            ? `<span class="px-2 py-0.5 rounded text-[11px] bg-emerald-50 text-emerald-800 font-bold border border-emerald-200">FOUND (Rank #${item.gemini_eval.mention_rank || 1})</span>`
+            : `<span class="px-2 py-0.5 rounded text-[11px] bg-rose-50 text-rose-700 font-bold border border-rose-200">NOT FOUND</span>`;
+        }
+
+        const comps = new Set();
+        if (item.chatgpt_eval?.competitors_cited) item.chatgpt_eval.competitors_cited.forEach(c => comps.add(c));
+        if (item.gemini_eval?.competitors_cited) item.gemini_eval.competitors_cited.forEach(c => comps.add(c));
+
+        const compsHtml = comps.size > 0
+          ? `<div class="flex items-center flex-wrap gap-1.5 pt-1">
+               <span class="text-[11px] text-stone-600 font-medium">Shortlisted in AI Answers:</span>
+               ${Array.from(comps).map(c => `<span class="text-[10px] px-2 py-0.5 rounded bg-white border border-stone-200 text-teal-800 font-semibold">${escapeHtml(c)}</span>`).join("")}
+             </div>`
+          : "";
+
+        const gs = showAnySerp ? item.google_serp : null;
+        let serpSummaryCol = "";
+        let serpDetailsHtml = "";
+
+        if (gs && showAnySerp) {
+          let serpAioBadge = "";
+          let serpPage1Badge = "";
+
+          if (gs.status === "ok") {
+            if (showAio) {
+              serpAioBadge = (gs.ai_overview_supported === false)
+                ? `<span class="px-2 py-0.5 rounded text-[11px] bg-amber-50 text-amber-800 font-semibold border border-amber-200">AIO: NEEDS SERPAPI</span>`
+                : (gs.brand_in_ai_overview
+                    ? `<span class="px-2 py-0.5 rounded text-[11px] bg-emerald-50 text-emerald-800 font-bold border border-emerald-200">BRAND CITED</span>`
+                    : (gs.has_ai_overview
+                        ? `<span class="px-2 py-0.5 rounded text-[11px] bg-rose-50 text-rose-700 font-bold border border-rose-200">AIO SHOWN · NOT CITED</span>`
+                        : `<span class="px-2 py-0.5 rounded text-[11px] bg-stone-100 text-stone-600 font-semibold border border-stone-200">NO AIO BOX</span>`));
+            }
+            if (showPage1) {
+              serpPage1Badge = gs.brand_page1_rank
+                ? `<span class="px-2 py-0.5 rounded text-[11px] bg-emerald-50 text-emerald-800 font-bold border border-emerald-200">RANK #${gs.brand_page1_rank}</span>`
+                : `<span class="px-2 py-0.5 rounded text-[11px] bg-rose-50 text-rose-700 font-bold border border-rose-200">NOT ON PAGE 1</span>`;
+            }
+
+            const topListHtml = showPage1
+              ? (gs.page1_top_results || []).map(r => `
+                  <li class="flex items-center justify-between gap-2 py-1 px-2 rounded ${r.is_target_brand ? 'bg-emerald-50 text-emerald-900 font-bold border border-emerald-200' : 'text-stone-700'}">
+                    <span class="truncate">#${r.rank} · ${escapeHtml(r.title)} <span class="text-stone-500">(${escapeHtml(r.domain)})</span></span>
+                    ${r.is_target_brand ? '<span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold">YOUR SITE</span>' : ''}
+                  </li>
+                `).join("")
+              : "";
+
+            const serpHeaderLabel = (showAio && showPage1)
+              ? "Google Search Live (AI Overview &amp; Page-1 Top 10 Websites)"
+              : (showAio ? "Google Search Live (AI Overview)" : "Google Search Live (Page-1 Top 10 Websites)");
+
+            serpDetailsHtml = `
+              <div class="bg-white p-4 rounded-lg border border-violet-200 md:col-span-2 space-y-2 shadow-sm">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                  <span class="text-[11px] font-bold text-violet-800">${serpHeaderLabel}</span>
+                  <span>${serpAioBadge} ${serpPage1Badge}</span>
+                </div>
+                ${(showAio && gs.ai_overview_text) ? `<div class="text-xs text-stone-700 bg-[#FAF8F5] p-3 rounded border border-stone-200"><strong class="text-violet-800">AI Overview:</strong> ${escapeHtml(gs.ai_overview_text)}</div>` : ""}
+                ${topListHtml ? `<ul class="divide-y divide-stone-200/70 text-[11px] max-h-56 overflow-y-auto">${topListHtml}</ul>` : ""}
+              </div>
+            `;
+          } else {
+            const errBadge = `<span class="px-2 py-0.5 rounded text-[11px] bg-amber-50 text-amber-800 font-bold border border-amber-200">${escapeHtml(gs.status.toUpperCase())}</span>`;
+            serpAioBadge = showAio ? errBadge : "";
+            serpPage1Badge = showPage1 ? errBadge : "";
+            serpDetailsHtml = `
+              <div class="bg-amber-50 p-3 rounded-lg border border-amber-200 md:col-span-2 text-xs text-amber-900">
+                ${escapeHtml(gs.status_note || "Google SERP unavailable.")}
+              </div>
+            `;
+          }
+
+          serpSummaryCol = `
+            <div>
+              ${showAio ? `<span class="text-stone-600 block mb-1">Google AIO: ${serpAioBadge}</span>` : ""}
+              ${showPage1 ? `<span class="text-[11px] text-stone-600 block">Page 1: ${serpPage1Badge}</span>` : ""}
+            </div>
+          `;
+        }
+
+        const summaryColsClass = serpSummaryCol ? "sm:grid-cols-3" : "sm:grid-cols-2";
+        const detailsSummaryText = showAnySerp
+          ? "💬 View Complete AI Conversation, Google Search &amp; Full Responses"
+          : "💬 View Complete AI Conversation &amp; Full Responses";
+
+        itemEl.innerHTML = `
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <span class="text-xs sm:text-sm font-semibold text-stone-900">#${item.prompt_id} - ${escapeHtml(item.prompt_text)}</span>
+            <span class="text-[10px] px-2 py-0.5 rounded bg-stone-200/70 text-stone-700 font-semibold uppercase tracking-wider">${escapeHtml(item.intent_category)}</span>
+          </div>
+          ${compsHtml}
+          <div class="grid grid-cols-1 ${summaryColsClass} gap-4 text-xs pt-2 border-t border-stone-200">
+            ${serpSummaryCol}
+            <div>
+              <span class="text-stone-600 block mb-1">ChatGPT: ${gptBadge}</span>
+              <span class="text-[11px] text-stone-500 truncate block">Sources: ${item.chatgpt_sources.slice(0, 3).map(s => escapeHtml(s)).join(", ") || "None"}</span>
+            </div>
+            <div>
+              <span class="text-stone-600 block mb-1">Gemini: ${gemBadge}</span>
+              <span class="text-[11px] text-stone-500 truncate block">Sources: ${item.gemini_sources.slice(0, 3).map(s => escapeHtml(s)).join(", ") || "None"}</span>
+            </div>
+          </div>
+          <details ${idx === 0 ? "open" : ""} class="pt-2 text-xs border-t border-stone-200">
+            <summary class="cursor-pointer text-teal-700 hover:text-teal-900 font-semibold py-1">
+              ${detailsSummaryText}
+            </summary>
+            <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
+              ${serpDetailsHtml}
+              <div class="bg-white p-4 rounded-lg border border-stone-200 shadow-sm">
+                <span class="text-[11px] font-bold text-teal-700 block mb-2">ChatGPT Full Output</span>
+                <div class="ai-prose text-xs text-stone-700 leading-relaxed max-h-96 overflow-y-auto">${item.chatgpt_html || escapeHtml(item.chatgpt_result) || "Not executed"}</div>
+              </div>
+              <div class="bg-white p-4 rounded-lg border border-stone-200 shadow-sm">
+                <span class="text-[11px] font-bold text-sky-700 block mb-2">Google Gemini Full Output</span>
+                <div class="ai-prose text-xs text-stone-700 leading-relaxed max-h-96 overflow-y-auto">${item.gemini_html || escapeHtml(item.gemini_result) || "Not executed"}</div>
+              </div>
+            </div>
+          </details>
+        `;
+        listContainer.appendChild(itemEl);
+      });
+    }
+
+    function copyConsultantPrompt() {
+      const text = document.getElementById("consultant-prompt-text").innerText;
+      navigator.clipboard.writeText(text);
+      alert("Consultant prompt copied to clipboard!");
+    }
+
+    function copyRawJsonData() {
+      if (!window.lastAuditReport) return;
+      navigator.clipboard.writeText(JSON.stringify(window.lastAuditReport, null, 2));
+      alert("Full audit JSON copied to clipboard!");
+    }
+  </script>
+</body>
+</html>
