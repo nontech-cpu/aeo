@@ -62,14 +62,14 @@ class WebsiteCrawler:
 
     @classmethod
     async def _playwright_fetch(cls, url: str) -> str:
-        ctx = await BrowserContextManager.get_context(headless=True)
+        ctx = await BrowserContextManager.create_isolated_context(headless=True)
         page = await ctx.new_page()
         try:
             await page.goto(url, wait_until="domcontentloaded", timeout=25000)
             await asyncio.sleep(2.5)
             return await page.content()
         finally:
-            await page.close()
+            await ctx.close()
 
     @classmethod
     async def _fetch_rendered_html(cls, url: str) -> str:

@@ -21,6 +21,12 @@ BROWSER_ARGS = [
     "--disable-infobars",
     "--disable-dev-shm-usage",
     "--disable-extensions",
+    "--disable-gpu",
+    "--disable-software-rasterizer",
+    "--no-first-run",
+    "--no-default-browser-check",
+    "--disable-background-networking",
+    "--disable-features=TranslateUI",
 ]
 
 class BrowserContextManager:
@@ -97,7 +103,7 @@ class BrowserContextManager:
         """Creates a lightweight isolated BrowserContext (ideal for parallel concurrent tabs)."""
         browser = await cls.get_browser(headless=headless)
         ctx = await browser.new_context(
-            viewport={"width": 1920, "height": 1080},
+            viewport={"width": 1280, "height": 720},
             user_agent=settings.USER_AGENT,
             ignore_https_errors=True,
         )
@@ -115,7 +121,7 @@ class BrowserContextManager:
                 cls._context = await cls._playwright.chromium.launch_persistent_context(
                     user_data_dir=str(cls._user_data_dir),
                     headless=headless,
-                    viewport={"width": 1920, "height": 1080},
+                    viewport={"width": 1280, "height": 720},
                     user_agent=settings.USER_AGENT,
                     args=BROWSER_ARGS,
                     ignore_https_errors=True,
@@ -128,6 +134,27 @@ class BrowserContextManager:
             logger.info(f"Initialized Playwright browser context in {cls._user_data_dir}")
 
         return cls._context
+
+    @classmethod
+    async def close_persistent_context(cls):
+        """Closes any open persistent context to free Chromium RAM before worker runs."""
+        if cls._context is not None:
+            try:
+                await asyncio.wait_for(cls._context.close(), timeout=5)
+            except Exception as e:
+                logger.warning(f"Error closing persistent context: {e}")
+            cls._context = None
+
+    @classmethod
+    async def restart_browser(cls, headless: bool = True):
+        """Recycles the shared Chromium browser instance to recover from renderer OOM crashes."""
+        if cls._browser is not None:
+            try:
+                await asyncio.wait_for(cls._browser.close(), timeout=5)
+            except Exception as e:
+                logger.warning(f"Error closing shared browser during restart: {e}")
+            cls._browser = None
+        await cls.get_browser(headless=headless)
 
     @classmethod
     async def _render_pdf_internal(cls, html_content: str, header_html: str = "", footer_html: str = "") -> bytes:

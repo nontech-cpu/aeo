@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     SERPER_API_KEY: Optional[str] = os.getenv("SERPER_API_KEY", "")
     
     # Defaults
-    DEFAULT_GEMINI_MODEL: str = "gemini-3.8-flash"
+    DEFAULT_GEMINI_MODEL: str = "gemini-2.5-flash"
     DEFAULT_OPENAI_MODEL: str = "gpt-4o-mini"
     
     # Crawler Settings

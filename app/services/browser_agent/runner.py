@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import os
 from typing import List, Callable, Optional
 from app.schemas.search_schema import ModelExecutionResult, AgentChoice
 from app.schemas.prompt_schema import SearchPrompt
@@ -9,11 +10,23 @@ from app.services.browser_agent.gemini_driver import GeminiDriver
 
 logger = logging.getLogger(__name__)
 
+
+def _is_constrained_container() -> bool:
+    """Detects cloud container runtimes (Railway, Render, Fly, Heroku) with strict RAM limits."""
+    return bool(
+        os.getenv("RAILWAY_ENVIRONMENT")
+        or os.getenv("RAILWAY_PROJECT_ID")
+        or os.getenv("RENDER")
+        or os.getenv("FLY_APP_NAME")
+        or os.getenv("DYNO")
+    )
+
+
 class BrowserAuditRunner:
     """
     High-Speed Parallel Multi-Tab Browser Audit Runner.
-    Runs ChatGPT and Gemini concurrently using isolated worker contexts per query,
-    cutting total 20-query execution time from ~8 minutes down to ~45-75 seconds.
+    Runs ChatGPT and Gemini using isolated worker contexts per query,
+    automatically throttling to single-tab sequential execution on RAM-constrained cloud containers.
     """
 
     @classmethod
@@ -44,69 +57,79 @@ class BrowserAuditRunner:
         idx: int,
         total_prompts: int,
         sem: asyncio.Semaphore,
+        global_sem: asyncio.Semaphore,
         headless: bool,
+        is_cloud: bool,
         progress_cb: Callable[[str], None],
         result_cb: Optional[Callable[[ModelExecutionResult], None]],
     ) -> ModelExecutionResult:
         async with sem:
-            last_err = None
-            for attempt in range(2):
-                ctx = await BrowserContextManager.create_isolated_context(headless=headless)
-                try:
-                    page = await ctx.new_page()
-                    label = "ChatGPT" if engine == "chatgpt" else "Gemini"
-                    if attempt == 0:
-                        progress_cb(f"{label} Worker -> Executing Prompt {idx}/{total_prompts}: '{prompt.prompt_text}'")
-                    else:
-                        progress_cb(f"{label} Worker -> Retrying Prompt {idx}/{total_prompts}...")
+            async with global_sem:
+                last_err = None
+                for attempt in range(2):
+                    ctx = None
+                    try:
+                        ctx = await BrowserContextManager.create_isolated_context(headless=headless)
+                        page = await ctx.new_page()
+                        label = "ChatGPT" if engine == "chatgpt" else "Gemini"
+                        if attempt == 0:
+                            progress_cb(f"{label} Worker -> Executing Prompt {idx}/{total_prompts}: '{prompt.prompt_text}'")
+                        else:
+                            progress_cb(f"{label} Worker -> Retrying Prompt {idx}/{total_prompts}...")
 
-                    if engine == "chatgpt":
-                        clean_text, clean_html, sources = await asyncio.wait_for(
-                            ChatGPTDriver.execute_query_rich(page, prompt.prompt_text, fresh_chat=True, timeout_seconds=55),
-                            timeout=75,
-                        )
-                    else:
-                        clean_text, clean_html, sources = await asyncio.wait_for(
-                            GeminiDriver.execute_query_rich(page, prompt.prompt_text, fresh_chat=True, timeout_seconds=55),
-                            timeout=75,
-                        )
+                        if engine == "chatgpt":
+                            clean_text, clean_html, sources = await asyncio.wait_for(
+                                ChatGPTDriver.execute_query_rich(page, prompt.prompt_text, fresh_chat=True, timeout_seconds=55),
+                                timeout=75,
+                            )
+                        else:
+                            clean_text, clean_html, sources = await asyncio.wait_for(
+                                GeminiDriver.execute_query_rich(page, prompt.prompt_text, fresh_chat=True, timeout_seconds=55),
+                                timeout=75,
+                            )
 
+                        res = ModelExecutionResult(
+                            engine=engine,
+                            prompt_id=prompt.id,
+                            prompt_text=prompt.prompt_text,
+                            response_text=clean_text,
+                            response_html=clean_html,
+                            cited_sources=sources,
+                        )
+                        progress_cb(f"{label} Worker -> Completed Prompt {idx}/{total_prompts} ({len(clean_text)} chars, {len(sources)} sources)")
+                        last_err = None
+                        break
+                    except Exception as e:
+                        last_err = e
+                        logger.warning(f"{engine} Prompt #{prompt.id} attempt {attempt + 1} failed: {e}")
+                        err_lower = str(e).lower()
+                        if is_cloud or "crashed" in err_lower or "closed" in err_lower:
+                            # Recycle Chromium after crash / on cloud so fresh renderer launches cleanly
+                            await BrowserContextManager.restart_browser(headless=headless)
+                            await asyncio.sleep(1.0)
+                    finally:
+                        if ctx is not None:
+                            try:
+                                await asyncio.wait_for(ctx.close(), timeout=5)
+                            except Exception:
+                                pass
+
+                if last_err is not None:
+                    logger.error(f"{engine} Prompt #{prompt.id} failed after retry: {last_err}")
                     res = ModelExecutionResult(
                         engine=engine,
                         prompt_id=prompt.id,
                         prompt_text=prompt.prompt_text,
-                        response_text=clean_text,
-                        response_html=clean_html,
-                        cited_sources=sources,
+                        response_text=f"Execution failed on {engine} tab: {last_err}",
+                        response_html="",
+                        cited_sources=[],
+                        error=str(last_err),
                     )
-                    progress_cb(f"{label} Worker -> Completed Prompt {idx}/{total_prompts} ({len(clean_text)} chars, {len(sources)} sources)")
-                    last_err = None
-                    break
-                except Exception as e:
-                    last_err = e
-                    logger.warning(f"{engine} Prompt #{prompt.id} attempt {attempt + 1} failed: {e}")
-                finally:
-                    try:
-                        await asyncio.wait_for(ctx.close(), timeout=5)
-                    except Exception:
-                        pass
+                    progress_cb(f"{engine.capitalize()} Worker -> Prompt {idx}/{total_prompts} error: {last_err}")
 
-            if last_err is not None:
-                logger.error(f"{engine} Prompt #{prompt.id} failed after retry: {last_err}")
-                res = ModelExecutionResult(
-                    engine=engine,
-                    prompt_id=prompt.id,
-                    prompt_text=prompt.prompt_text,
-                    response_text=f"Execution failed on {engine} tab: {last_err}",
-                    response_html="",
-                    cited_sources=[],
-                    error=str(last_err),
-                )
-                progress_cb(f"{engine.capitalize()} Worker -> Prompt {idx}/{total_prompts} error: {last_err}")
-
-            if result_cb:
-                result_cb(res)
-            return res
+                if result_cb:
+                    result_cb(res)
+                return res
 
     @classmethod
     async def _run_browser_audit_internal(
@@ -118,6 +141,13 @@ class BrowserAuditRunner:
         on_progress: Optional[Callable[[int, str], None]] = None,
         on_result: Optional[Callable[[ModelExecutionResult], None]] = None,
     ) -> List[ModelExecutionResult]:
+
+        is_cloud = _is_constrained_container()
+        # Free any persistent browser left open from Step 1 prompt generation to keep RAM low
+        await BrowserContextManager.close_persistent_context()
+
+        effective_per_engine = 1 if is_cloud else concurrency_per_engine
+        global_cap = 1 if is_cloud else max(effective_per_engine * 2, 2)
 
         total_tasks = len(prompts) * (2 if agent_choice == AgentChoice.ALL else 1)
         completed_count = 0
@@ -136,24 +166,28 @@ class BrowserAuditRunner:
             if on_result:
                 on_result(res)
 
-        gpt_sem = asyncio.Semaphore(concurrency_per_engine)
-        gem_sem = asyncio.Semaphore(concurrency_per_engine)
+        if is_cloud:
+            _emit("Cloud container detected: running memory-safe single-tab browser execution...")
+
+        gpt_sem = asyncio.Semaphore(effective_per_engine)
+        gem_sem = asyncio.Semaphore(effective_per_engine)
+        global_sem = asyncio.Semaphore(global_cap)
 
         tasks = []
         total_p = len(prompts)
 
         if agent_choice in [AgentChoice.CHATGPT, AgentChoice.ALL]:
-            _emit(f"Launching {min(concurrency_per_engine, total_p)} parallel ChatGPT workers...")
+            _emit(f"Launching {min(effective_per_engine, total_p)} ChatGPT worker(s)...")
             for idx, p in enumerate(prompts, start=1):
                 tasks.append(
-                    cls._run_single_worker("chatgpt", p, idx, total_p, gpt_sem, headless, _emit, _on_res)
+                    cls._run_single_worker("chatgpt", p, idx, total_p, gpt_sem, global_sem, headless, is_cloud, _emit, _on_res)
                 )
 
         if agent_choice in [AgentChoice.GEMINI, AgentChoice.ALL]:
-            _emit(f"Launching {min(concurrency_per_engine, total_p)} parallel Gemini workers...")
+            _emit(f"Launching {min(effective_per_engine, total_p)} Gemini worker(s)...")
             for idx, p in enumerate(prompts, start=1):
                 tasks.append(
-                    cls._run_single_worker("gemini", p, idx, total_p, gem_sem, headless, _emit, _on_res)
+                    cls._run_single_worker("gemini", p, idx, total_p, gem_sem, global_sem, headless, is_cloud, _emit, _on_res)
                 )
 
         results = await asyncio.gather(*tasks, return_exceptions=False)
