@@ -58,6 +58,15 @@ async def serve_ui():
         raise HTTPException(status_code=404, detail="Frontend template not found")
     return HTMLResponse(content=TEMPLATE_PATH.read_text(encoding="utf-8"))
 
+@app.get("/health")
+async def health_check():
+    """Lightweight health check endpoint for Railway and UptimeRobot."""
+    return {
+        "status": "ok",
+        "service": settings.PROJECT_NAME,
+        "version": "2.0.0",
+    }
+
 @app.post("/api/v1/crawl-and-suggest", response_model=GeneratedPromptsResponse)
 async def crawl_and_suggest_prompts(payload: WebsiteCrawlRequest):
     """
