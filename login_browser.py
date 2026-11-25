@@ -7,7 +7,7 @@ SESSION_DIR = Path(__file__).resolve().parent / "data" / "browser_session"
 
 async def main():
     print("=" * 70)
-    print("HERMES BROWSER AGENT - 1-TIME SESSION SETUP")
+    print("SHAPEBYTESAEO BROWSER AGENT - 1-TIME SESSION SETUP")
     print("=" * 70)
     print(f"Session data will be saved permanently in: {SESSION_DIR}\n")
     print("A visible Chrome window is opening now:")
@@ -38,7 +38,7 @@ async def main():
         await asyncio.to_thread(input, "\n👉 Once logged into ChatGPT & Google, press [ENTER] here to save session: ")
         
         await context.close()
-        print("\n✅ Session successfully saved! Hermes can now run browser audits automatically.")
+        print("\n✅ Session successfully saved! ShapeBytesAEO can now run browser audits automatically.")
 
 if __name__ == "__main__":
     asyncio.run(main())

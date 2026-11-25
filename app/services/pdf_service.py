@@ -25,7 +25,7 @@ class PDFReportGenerator:
         header_html = (
             "<div style='width:100%; font-size:7.5pt; color:#64748b; padding:0 14mm; "
             "display:flex; justify-content:space-between; font-family:sans-serif;'>"
-            f"<span>Hermes AEO Audit &mdash; {escape(report.brand_name)}</span>"
+            f"<span>ShapeBytesAEO Audit &mdash; {escape(report.brand_name)}</span>"
             f"<span>{escape(report.website_url)}</span>"
             "</div>"
         )

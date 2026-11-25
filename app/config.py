@@ -3,7 +3,7 @@ from pydantic_settings import BaseSettings
 from typing import Optional
 
 class Settings(BaseSettings):
-    PROJECT_NAME: str = "AEO/GEO Intelligence Engine"
+    PROJECT_NAME: str = "ShapeBytesAEO"
     API_V1_STR: str = "/api/v1"
     
     # LLM & Search Grounding Keys

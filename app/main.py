@@ -53,7 +53,7 @@ TEMPLATE_PATH = Path(__file__).parent / "templates" / "index.html"
 
 @app.get("/", response_class=HTMLResponse)
 async def serve_ui():
-    """Serves the modern, single-page Hermes AEO audit dashboard."""
+    """Serves the modern, single-page ShapeBytesAEO audit dashboard."""
     if not TEMPLATE_PATH.exists():
         raise HTTPException(status_code=404, detail="Frontend template not found")
     return HTMLResponse(content=TEMPLATE_PATH.read_text(encoding="utf-8"))
@@ -372,7 +372,7 @@ async def download_pdf_report(audit_id: str):
     try:
         pdf_bytes = await PDFReportGenerator.generate_pdf_bytes_async(report)
         clean_brand = "".join(c for c in report.brand_name if c.isalnum() or c in (" ", "_", "-")).strip().replace(" ", "_")
-        filename = f"Hermes_AEO_Audit_{clean_brand or 'Report'}.pdf"
+        filename = f"ShapeBytesAEO_Audit_{clean_brand or 'Report'}.pdf"
 
         return Response(
             content=pdf_bytes,
