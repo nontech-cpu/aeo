@@ -455,7 +455,7 @@
         <td>
           {% if item.chatgpt_eval %}
             {% if item.chatgpt_eval.is_brand_present %}
-              <span class="badge badge-found">#{{ item.chatgpt_eval.mention_rank or 1 }}</span>
+              <span class="badge badge-found">{% if item.chatgpt_eval.mention_rank %}#{{ item.chatgpt_eval.mention_rank }}{% else %}Found{% endif %}</span>
             {% else %}
               <span class="badge badge-missing">No</span>
             {% endif %}
@@ -466,7 +466,7 @@
         <td>
           {% if item.gemini_eval %}
             {% if item.gemini_eval.is_brand_present %}
-              <span class="badge badge-found">#{{ item.gemini_eval.mention_rank or 1 }}</span>
+              <span class="badge badge-found">{% if item.gemini_eval.mention_rank %}#{{ item.gemini_eval.mention_rank }}{% else %}Found{% endif %}</span>
             {% else %}
               <span class="badge badge-missing">No</span>
             {% endif %}
@@ -613,51 +613,111 @@
     </div>
     {% endif %}
 
-    {% if item.chatgpt_result is not none %}
+    {% if item.chatgpt_result is not none or item.gemini_result is not none %}
     <div class="engine-section">
       <div class="engine-meta">
-        <span class="engine-name">ChatGPT Live Response</span>
-        {% if item.chatgpt_eval and item.chatgpt_eval.is_brand_present %}
-          <span class="badge badge-found">FOUND{% if item.chatgpt_eval.mention_rank %} (Rank #{{ item.chatgpt_eval.mention_rank }}){% endif %}</span>
-        {% else %}
-          <span class="badge badge-missing">NOT FOUND</span>
-        {% endif %}
+        <span class="engine-name">AI Answer Overview (ChatGPT vs Google Gemini)</span>
       </div>
-      <div class="engine-submeta">
-        <strong>Competitors Cited:</strong> {{ item.chatgpt_eval.competitors_cited | join(", ") if (item.chatgpt_eval and item.chatgpt_eval.competitors_cited) else "None" }}<br>
-        <strong>Cited URLs:</strong> {{ item.chatgpt_sources | join(", ") if item.chatgpt_sources else "None" }}
-      </div>
-      <div class="ai-content">
-        {% if item.chatgpt_html %}
-          {{ item.chatgpt_html | safe }}
-        {% else %}
-          <p style="white-space: pre-wrap;">{{ item.chatgpt_result }}</p>
-        {% endif %}
-      </div>
-    </div>
-    {% endif %}
+      <table class="data-table" style="margin-bottom: 10px;">
+        <thead>
+          <tr>
+            <th style="width: 16%;">Engine</th>
+            <th style="width: 18%;">Brand Status</th>
+            <th style="width: 14%;">Sentiment</th>
+            <th style="width: 28%;">Competitors Cited</th>
+            <th style="width: 24%;">Cited URLs</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if item.chatgpt_result is not none %}
+          <tr>
+            <td><strong>ChatGPT</strong></td>
+            <td>
+              {% if item.chatgpt_eval and item.chatgpt_eval.is_brand_present %}
+                <span class="badge badge-found">FOUND{% if item.chatgpt_eval.mention_rank %} (#{{ item.chatgpt_eval.mention_rank }}){% endif %}</span>
+              {% else %}
+                <span class="badge badge-missing">NOT FOUND</span>
+              {% endif %}
+            </td>
+            <td>{{ (item.chatgpt_eval.sentiment if item.chatgpt_eval else "not_mentioned") | replace("_", " ") | title }}</td>
+            <td>{{ item.chatgpt_eval.competitors_cited | join(", ") if (item.chatgpt_eval and item.chatgpt_eval.competitors_cited) else "None" }}</td>
+            <td style="font-size: 7.5pt; word-break: break-all;">{{ item.chatgpt_sources[:4] | join(", ") if item.chatgpt_sources else "None" }}</td>
+          </tr>
+          {% endif %}
+          {% if item.gemini_result is not none %}
+          <tr>
+            <td><strong>Google Gemini</strong></td>
+            <td>
+              {% if item.gemini_eval and item.gemini_eval.is_brand_present %}
+                <span class="badge badge-found">FOUND{% if item.gemini_eval.mention_rank %} (#{{ item.gemini_eval.mention_rank }}){% endif %}</span>
+              {% else %}
+                <span class="badge badge-missing">NOT FOUND</span>
+              {% endif %}
+            </td>
+            <td>{{ (item.gemini_eval.sentiment if item.gemini_eval else "not_mentioned") | replace("_", " ") | title }}</td>
+            <td>{{ item.gemini_eval.competitors_cited | join(", ") if (item.gemini_eval and item.gemini_eval.competitors_cited) else "None" }}</td>
+            <td style="font-size: 7.5pt; word-break: break-all;">{{ item.gemini_sources[:4] | join(", ") if item.gemini_sources else "None" }}</td>
+          </tr>
+          {% endif %}
+        </tbody>
+      </table>
 
-    {% if item.gemini_result is not none %}
-    <div class="engine-section">
-      <div class="engine-meta">
-        <span class="engine-name">Google Gemini Live Response</span>
-        {% if item.gemini_eval and item.gemini_eval.is_brand_present %}
-          <span class="badge badge-found">FOUND{% if item.gemini_eval.mention_rank %} (Rank #{{ item.gemini_eval.mention_rank }}){% endif %}</span>
-        {% else %}
-          <span class="badge badge-missing">NOT FOUND</span>
-        {% endif %}
+      <div class="engine-meta" style="margin-top: 6px;">
+        <span class="engine-name">Extracted Output Summary Table (ChatGPT &amp; Gemini Recommendations)</span>
       </div>
-      <div class="engine-submeta">
-        <strong>Competitors Cited:</strong> {{ item.gemini_eval.competitors_cited | join(", ") if (item.gemini_eval and item.gemini_eval.competitors_cited) else "None" }}<br>
-        <strong>Cited URLs:</strong> {{ item.gemini_sources | join(", ") if item.gemini_sources else "None" }}
-      </div>
-      <div class="ai-content">
-        {% if item.gemini_html %}
-          {{ item.gemini_html | safe }}
-        {% else %}
-          <p style="white-space: pre-wrap;">{{ item.gemini_result }}</p>
-        {% endif %}
-      </div>
+      <table class="data-table" style="margin-bottom: 4px;">
+        <thead>
+          <tr>
+            <th style="width: 14%;">Engine</th>
+            <th style="width: 7%;">#</th>
+            <th style="width: 28%;">Brand / Point</th>
+            <th style="width: 51%;">Key Summary &amp; Highlights</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if item.chatgpt_eval and item.chatgpt_eval.summary_rows %}
+            {% for row in item.chatgpt_eval.summary_rows %}
+            <tr style="{% if row.is_target_brand %}background: #ecfdf5 !important;{% endif %}">
+              <td><strong>ChatGPT</strong></td>
+              <td>{{ "#" ~ row.rank if row.rank else loop.index }}</td>
+              <td>
+                <strong>{{ row.point_title }}</strong>
+                {% if row.is_target_brand %}<span class="badge badge-found" style="margin-left: 4px;">YOUR BRAND</span>{% endif %}
+              </td>
+              <td>{{ row.summary }}</td>
+            </tr>
+            {% endfor %}
+          {% elif item.chatgpt_result is not none %}
+            <tr>
+              <td><strong>ChatGPT</strong></td>
+              <td>-</td>
+              <td>Response</td>
+              <td>{{ item.chatgpt_result[:240] }}</td>
+            </tr>
+          {% endif %}
+
+          {% if item.gemini_eval and item.gemini_eval.summary_rows %}
+            {% for row in item.gemini_eval.summary_rows %}
+            <tr style="{% if row.is_target_brand %}background: #ecfdf5 !important;{% endif %}">
+              <td><strong>Gemini</strong></td>
+              <td>{{ "#" ~ row.rank if row.rank else loop.index }}</td>
+              <td>
+                <strong>{{ row.point_title }}</strong>
+                {% if row.is_target_brand %}<span class="badge badge-found" style="margin-left: 4px;">YOUR BRAND</span>{% endif %}
+              </td>
+              <td>{{ row.summary }}</td>
+            </tr>
+            {% endfor %}
+          {% elif item.gemini_result is not none %}
+            <tr>
+              <td><strong>Gemini</strong></td>
+              <td>-</td>
+              <td>Response</td>
+              <td>{{ item.gemini_result[:240] }}</td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
     </div>
     {% endif %}
   </div>

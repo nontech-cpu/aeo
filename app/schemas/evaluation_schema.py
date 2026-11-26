@@ -1,17 +1,25 @@
 from pydantic import BaseModel, Field
 from typing import List, Optional
 
+class SummaryPointRow(BaseModel):
+    """Structured concise row extracted from an AI engine's bullet/numbered response."""
+    rank: Optional[int] = None
+    point_title: str
+    summary: str
+    is_target_brand: bool = False
+
 class SingleModelEvaluation(BaseModel):
     """
-    LLM-as-a-judge output for a single engine's response.
-    Zero-regex guarantee: Evaluates brand presence, rank, sentiment, competitors, and sources.
+    LLM-as-a-judge + deterministic ground-truth verification output for a single engine's response.
+    Zero-regex guarantee: Evaluates brand presence, rank, sentiment, competitors, sources, and summary table rows.
     """
     engine: str
-    is_brand_present: bool = Field(..., description="True if target brand or its exact domain was mentioned or recommended")
-    mention_rank: Optional[int] = Field(None, description="Position/rank if explicitly recommended in a list (e.g. 1, 2, 3). None if not listed.")
+    is_brand_present: bool = Field(..., description="True ONLY if target brand or its exact domain actually appears in answer or cited URLs")
+    mention_rank: Optional[int] = Field(None, description="Position/rank if explicitly recommended in a list (e.g. 1, 2, 7). None if not listed.")
     sentiment: str = Field(default="neutral", description="Positive, Neutral, Critical, or Not Mentioned")
     competitors_cited: List[str] = Field(default_factory=list, description="Names of competing companies or alternative brands mentioned in the answer")
     key_source_domains: List[str] = Field(default_factory=list, description="Domains from which the model gathered the answer")
+    summary_rows: List[SummaryPointRow] = Field(default_factory=list, description="Structured tabular breakdown of key recommendations/points in the response")
 
 class GooglePage1Result(BaseModel):
     rank: int

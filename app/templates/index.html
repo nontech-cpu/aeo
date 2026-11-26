@@ -749,13 +749,13 @@
 
           const gptCell = item.chatgpt_eval
             ? (item.chatgpt_eval.is_brand_present
-                ? `<span class="text-teal-700 font-bold">#${item.chatgpt_eval.mention_rank || 1}</span>`
+                ? `<span class="text-teal-700 font-bold">${item.chatgpt_eval.mention_rank ? '#' + item.chatgpt_eval.mention_rank : 'Found'}</span>`
                 : `<span class="text-rose-600 font-medium">No</span>`)
             : `<span class="text-stone-400">N/A</span>`;
 
           const gemCell = item.gemini_eval
             ? (item.gemini_eval.is_brand_present
-                ? `<span class="text-teal-700 font-bold">#${item.gemini_eval.mention_rank || 1}</span>`
+                ? `<span class="text-teal-700 font-bold">${item.gemini_eval.mention_rank ? '#' + item.gemini_eval.mention_rank : 'Found'}</span>`
                 : `<span class="text-rose-600 font-medium">No</span>`)
             : `<span class="text-stone-400">N/A</span>`;
 
@@ -828,14 +828,14 @@
         let gptBadge = `<span class="text-xs text-stone-400">N/A</span>`;
         if (item.chatgpt_eval) {
           gptBadge = item.chatgpt_eval.is_brand_present
-            ? `<span class="px-2 py-0.5 rounded text-[11px] bg-emerald-50 text-emerald-800 font-bold border border-emerald-200">FOUND (Rank #${item.chatgpt_eval.mention_rank || 1})</span>`
+            ? `<span class="px-2 py-0.5 rounded text-[11px] bg-emerald-50 text-emerald-800 font-bold border border-emerald-200">FOUND${item.chatgpt_eval.mention_rank ? ` (Rank #${item.chatgpt_eval.mention_rank})` : ''}</span>`
             : `<span class="px-2 py-0.5 rounded text-[11px] bg-rose-50 text-rose-700 font-bold border border-rose-200">NOT FOUND</span>`;
         }
 
         let gemBadge = `<span class="text-xs text-stone-400">N/A</span>`;
         if (item.gemini_eval) {
           gemBadge = item.gemini_eval.is_brand_present
-            ? `<span class="px-2 py-0.5 rounded text-[11px] bg-emerald-50 text-emerald-800 font-bold border border-emerald-200">FOUND (Rank #${item.gemini_eval.mention_rank || 1})</span>`
+            ? `<span class="px-2 py-0.5 rounded text-[11px] bg-emerald-50 text-emerald-800 font-bold border border-emerald-200">FOUND${item.gemini_eval.mention_rank ? ` (Rank #${item.gemini_eval.mention_rank})` : ''}</span>`
             : `<span class="px-2 py-0.5 rounded text-[11px] bg-rose-50 text-rose-700 font-bold border border-rose-200">NOT FOUND</span>`;
         }
 
@@ -918,8 +918,52 @@
 
         const summaryColsClass = serpSummaryCol ? "sm:grid-cols-3" : "sm:grid-cols-2";
         const detailsSummaryText = showAnySerp
-          ? "💬 View Complete AI Conversation, Google Search &amp; Full Responses"
-          : "💬 View Complete AI Conversation &amp; Full Responses";
+          ? "📄 View Full Raw AI Responses &amp; Google Search"
+          : "📄 View Full Raw ChatGPT &amp; Gemini Responses";
+
+        const allSummaryRows = [];
+        if (item.chatgpt_eval?.summary_rows?.length) {
+          item.chatgpt_eval.summary_rows.forEach((r, rIdx) => {
+            allSummaryRows.push({ engine: "ChatGPT", engineBadge: "bg-teal-50 text-teal-800 border-teal-200", rank: r.rank || (rIdx + 1), title: r.point_title, summary: r.summary, hit: r.is_target_brand });
+          });
+        } else if (item.chatgpt_result) {
+          allSummaryRows.push({ engine: "ChatGPT", engineBadge: "bg-teal-50 text-teal-800 border-teal-200", rank: "-", title: "Response Summary", summary: item.chatgpt_result.slice(0, 220), hit: Boolean(item.chatgpt_eval?.is_brand_present) });
+        }
+        if (item.gemini_eval?.summary_rows?.length) {
+          item.gemini_eval.summary_rows.forEach((r, rIdx) => {
+            allSummaryRows.push({ engine: "Gemini", engineBadge: "bg-sky-50 text-sky-800 border-sky-200", rank: r.rank || (rIdx + 1), title: r.point_title, summary: r.summary, hit: r.is_target_brand });
+          });
+        } else if (item.gemini_result) {
+          allSummaryRows.push({ engine: "Gemini", engineBadge: "bg-sky-50 text-sky-800 border-sky-200", rank: "-", title: "Response Summary", summary: item.gemini_result.slice(0, 220), hit: Boolean(item.gemini_eval?.is_brand_present) });
+        }
+
+        const summaryTableHtml = allSummaryRows.length > 0 ? `
+          <div class="overflow-x-auto bg-white rounded-lg border border-stone-200 shadow-sm">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="border-b border-stone-200 bg-[#F4F1EA] text-stone-600 uppercase text-[10px]">
+                  <th class="py-2 px-3 w-24">Engine</th>
+                  <th class="py-2 px-2 w-12">#</th>
+                  <th class="py-2 px-3 w-56">Brand / Key Point</th>
+                  <th class="py-2 px-3">Output Summary</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-stone-200/80 text-stone-700">
+                ${allSummaryRows.map(r => `
+                  <tr class="${r.hit ? 'bg-emerald-50/70' : 'hover:bg-[#FAF8F5]'}">
+                    <td class="py-2 px-3 whitespace-nowrap"><span class="px-2 py-0.5 rounded text-[10px] font-semibold border ${r.engineBadge}">${r.engine}</span></td>
+                    <td class="py-2 px-2 font-mono text-[11px] text-stone-500">${r.rank !== '-' ? '#' + r.rank : '-'}</td>
+                    <td class="py-2 px-3 font-semibold text-stone-900">
+                      ${escapeHtml(r.title)}
+                      ${r.hit ? '<span class="ml-1.5 px-1.5 py-0.5 rounded text-[9px] bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold">YOUR BRAND</span>' : ''}
+                    </td>
+                    <td class="py-2 px-3 text-stone-600 leading-snug">${escapeHtml(r.summary)}</td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>
+        ` : "";
 
         itemEl.innerHTML = `
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -938,7 +982,8 @@
               <span class="text-[11px] text-stone-500 truncate block">Sources: ${item.gemini_sources.slice(0, 3).map(s => escapeHtml(s)).join(", ") || "None"}</span>
             </div>
           </div>
-          <details ${idx === 0 ? "open" : ""} class="pt-2 text-xs border-t border-stone-200">
+          ${summaryTableHtml}
+          <details class="pt-2 text-xs border-t border-stone-200">
             <summary class="cursor-pointer text-teal-700 hover:text-teal-900 font-semibold py-1">
               ${detailsSummaryText}
             </summary>

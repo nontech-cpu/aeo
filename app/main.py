@@ -219,6 +219,8 @@ async def _execute_audit_job(audit_id: str, payload: AuditRequest):
         }
         authoritative_sources = set()
 
+        brand_norm_key = "".join(ch.lower() for ch in (brand_name or "") if ch.isalnum())
+
         for item in prompt_audits:
             serp = serp_snapshots.get(item.prompt_id)
             item.google_serp = serp
@@ -254,6 +256,9 @@ async def _execute_audit_job(audit_id: str, payload: AuditRequest):
                     for c in ev.competitors_cited:
                         c_clean = c.strip()
                         if not c_clean:
+                            continue
+                        c_key = "".join(ch.lower() for ch in c_clean if ch.isalnum())
+                        if brand_norm_key and (c_key == brand_norm_key):
                             continue
                         if c_clean not in competitor_counter:
                             competitor_counter[c_clean] = CompetitorStat(name=c_clean, is_custom_added=False, mention_count=0)
